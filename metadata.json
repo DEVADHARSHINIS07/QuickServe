@@ -1,0 +1,6 @@
+{
+  "name": "QuickServe",
+  "description": "QuickServe Smart Canteen Portal for AAA College students and staff with college mail domain verification, online food ordering, priority queue, and real-time order tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

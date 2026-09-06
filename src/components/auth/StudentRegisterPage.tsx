@@ -1,0 +1,269 @@
+import React, { useState } from 'react';
+import { motion } from 'motion/react';
+import { User, Mail, Phone, Hash, Lock, CheckCircle2, AlertCircle, Building2, UserPlus } from 'lucide-react';
+import { useCanteen } from '../../context/CanteenContext';
+
+interface StudentRegisterPageProps {
+  onNavigate: (path: string) => void;
+}
+
+const COLLEGE_DOMAIN = 'aaacet.ac.in';
+
+export const StudentRegisterPage: React.FC<StudentRegisterPageProps> = ({ onNavigate }) => {
+  const { registerStudent } = useCanteen();
+
+  const [name, setName] = useState('');
+  const [studentId, setStudentId] = useState('');
+  const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatusMsg(null);
+
+    if (!name || !studentId || !email || !mobile || !password || !confirmPassword) {
+      setStatusMsg({ type: 'error', text: 'Please fill in all mandatory fields.' });
+      return;
+    }
+
+    // Domain check
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail.endsWith(`@${COLLEGE_DOMAIN}`)) {
+      setStatusMsg({
+        type: 'error',
+        text: `Access Denied: Registration is restricted to official AAACET college email ending with @${COLLEGE_DOMAIN} (e.g. 24urcs029@aaacet.ac.in).`
+      });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setStatusMsg({ type: 'error', text: 'Passwords do not match!' });
+      return;
+    }
+
+    if (password.length < 6) {
+      setStatusMsg({ type: 'error', text: 'Password must be at least 6 characters long.' });
+      return;
+    }
+
+    setIsSubmitting(true);
+    const result = await registerStudent({
+      name,
+      studentId: studentId.toUpperCase(),
+      email: trimmedEmail,
+      mobile,
+      password
+    });
+    setIsSubmitting(false);
+
+    if (result.success) {
+      setStatusMsg({
+        type: 'success',
+        text: `Account created for ${trimmedEmail}! Confirmation email sent. Please sign in now.`
+      });
+      setTimeout(() => {
+        onNavigate('/student/login');
+      }, 1500);
+    } else {
+      setStatusMsg({ type: 'error', text: result.message || 'Registration failed. Email or Student ID may already exist.' });
+    }
+  };
+
+  return (
+    <div className="max-w-lg mx-auto py-8 px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800"
+      >
+        <div className="bg-gradient-to-r from-orange-400 via-amber-500 to-orange-500 p-6 text-white text-center">
+          <span className="bg-white/20 text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1">
+            <Building2 size={12} /> Student Account Setup
+          </span>
+          <h2 className="text-2xl font-black mt-2">New Student Registration</h2>
+          <p className="text-xs text-orange-100 mt-1 font-medium">
+            Join QuickServe Smart Canteen System • AAACET
+          </p>
+        </div>
+
+        <div className="p-6 space-y-4">
+          <div className="p-3.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 rounded-2xl flex items-center gap-2.5 text-xs text-blue-800 dark:text-blue-300">
+            <Building2 size={20} className="shrink-0 text-blue-600 dark:text-blue-400" />
+            <div>
+              <span className="font-bold block">College Domain Requirement</span>
+              <span className="text-[11px] text-blue-600 dark:text-blue-400">
+                Only email addresses ending with <strong>@aaacet.ac.in</strong> are allowed.
+              </span>
+            </div>
+          </div>
+
+          {statusMsg && (
+            <div
+              className={`p-3.5 rounded-2xl text-xs font-semibold flex items-start gap-2.5 ${
+                statusMsg.type === 'success'
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
+                  : 'bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800'
+              }`}
+            >
+              {statusMsg.type === 'success' ? (
+                <CheckCircle2 size={18} className="shrink-0 mt-0.5 text-emerald-600" />
+              ) : (
+                <AlertCircle size={18} className="shrink-0 mt-0.5 text-rose-600" />
+              )}
+              <span className="leading-relaxed">{statusMsg.text}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                Student Full Name
+              </label>
+              <div className="relative">
+                <User className="absolute left-3.5 top-2.5 text-slate-400" size={17} />
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="e.g. Devadharshini R"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-orange-400"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Student Roll / ID
+                </label>
+                <div className="relative">
+                  <Hash className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                  <input
+                    type="text"
+                    required
+                    value={studentId}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setStudentId(val);
+                      if (!email || email.endsWith(`@${COLLEGE_DOMAIN}`)) {
+                        setEmail(`${val.toLowerCase()}@${COLLEGE_DOMAIN}`);
+                      }
+                    }}
+                    placeholder="24URCS029"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-orange-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Mobile Number
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                  <input
+                    type="tel"
+                    required
+                    value={mobile}
+                    onChange={e => setMobile(e.target.value)}
+                    placeholder="+91 9876543210"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-orange-400"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                  College Email ID
+                </label>
+                <span className="text-[10px] font-extrabold text-orange-600 uppercase">
+                  @aaacet.ac.in Required
+                </span>
+              </div>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-2.5 text-slate-400" size={17} />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="24urcs029@aaacet.ac.in"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-orange-400"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-orange-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                  <input
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-orange-400"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3.5 mt-2 bg-gradient-to-r from-orange-400 to-amber-500 hover:opacity-95 text-white font-extrabold text-sm rounded-2xl shadow-lg shadow-orange-500/25 transition flex items-center justify-center gap-2"
+            >
+              {isSubmitting ? (
+                <span>Registering Account...</span>
+              ) : (
+                <>
+                  <UserPlus size={18} />
+                  <span>Create Student Account</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-500">
+            Already registered?{' '}
+            <button
+              onClick={() => onNavigate('/student/login')}
+              className="text-orange-600 hover:underline font-extrabold ml-1"
+            >
+              Sign In to Student Account
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+};

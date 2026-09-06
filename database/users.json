@@ -1,0 +1,58 @@
+[
+  {
+    "id": "USR_24URCS029",
+    "userId": "24URCS029",
+    "studentId": "24URCS029",
+    "name": "Devadharshini R",
+    "email": "24urcs029@aaacet.ac.in",
+    "mobile": "+91 98765 43210",
+    "role": "student",
+    "salt": "ead3d95ad8a0cdead445540c8c80cf87",
+    "passwordHash": "e2a2ffa4f2e52b75628b3bce5205e6d66dd60fe8e4a52e57be3404b343f238a54eff0a26896ab65a5b2de222af7d21a2b0bf4f02ae81aebd7b17fc7d7836cf47",
+    "accountStatus": "active",
+    "createdAt": "2026-09-06T04:54:23.587Z",
+    "updatedAt": "2026-09-06T04:54:23.587Z"
+  },
+  {
+    "id": "USR_ADM001",
+    "userId": "ADM001",
+    "studentId": "ADM001",
+    "name": "QuickServe Canteen Admin",
+    "email": "admin@aaacet.ac.in",
+    "mobile": "+91 91234 56789",
+    "role": "admin",
+    "salt": "295a0f681190ebd5dee38e2124cebdc2",
+    "passwordHash": "1eb7f184866752ce2081da4fa93b86414e8107f32db7478e935e561bcfb3a3d0520e152b6ce100d08cf9a1d639b83f8c5deb7cbe1321d4dd3654ea67b734bbda",
+    "accountStatus": "active",
+    "createdAt": "2026-09-06T04:54:23.587Z",
+    "updatedAt": "2026-09-06T04:54:23.587Z"
+  },
+  {
+    "id": "USR_1788670643558_rn80",
+    "userId": "24URCS099",
+    "studentId": "24URCS099",
+    "name": "Suresh K",
+    "email": "24urcs099@aaacet.ac.in",
+    "mobile": "+91 99999 88888",
+    "role": "student",
+    "salt": "d03b8e6639dfb2bdce083ebb99888e6a",
+    "passwordHash": "e5fadef51961667ece0170b53ab8a692a108313bac0d63a82810ec39533d276856e3d241a65053931e2036f82f4b3d1896db98bf3377d6f92797da647b80229a",
+    "accountStatus": "active",
+    "createdAt": "2026-09-06T04:57:23.558Z",
+    "updatedAt": "2026-09-06T04:57:23.558Z"
+  },
+  {
+    "id": "USR_1788672603974_qrg3",
+    "userId": "24URCS045",
+    "studentId": "24URCS045",
+    "name": "Priya M",
+    "email": "24urcs045@aaacet.ac.in",
+    "mobile": "+91 98765 11223",
+    "role": "student",
+    "salt": "ae6a856c18c0095a46f20e44015a5163",
+    "passwordHash": "e4a167e505f64ccbcced9c3c179d09c48e3dd32d316d79b491cb99b4d2dee5d0230ffb068d0ce516fbc393cc66f3c6f6dee6696134ffb6c8ff9ef3e4675959df",
+    "accountStatus": "active",
+    "createdAt": "2026-09-06T05:30:03.974Z",
+    "updatedAt": "2026-09-06T05:30:03.974Z"
+  }
+]
