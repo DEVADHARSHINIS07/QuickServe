@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, KeyRound, Lock, CheckCircle2, AlertCircle, ShieldCheck, ArrowLeft, Send } from 'lucide-react';
 import { useCanteen } from '../../context/CanteenContext';
+import { ThemeToggle } from '../common/ThemeToggle';
 
 interface AdminForgotPasswordPageProps {
   onNavigate: (path: string) => void;
@@ -39,13 +40,18 @@ export const AdminForgotPasswordPage: React.FC<AdminForgotPasswordPageProps> = (
     setIsSubmitting(false);
 
     if (res.success) {
+      if ((res as any).token) {
+        setToken((res as any).token);
+      } else if ((res as any).otp) {
+        setToken((res as any).otp);
+      }
       setStatusMsg({
         type: 'success',
-        text: res.message || `Admin password reset instructions sent to ${trimmed}. Please check your staff inbox.`
+        text: res.message || `Password reset instructions sent to ${trimmed}.`
       });
       setStep('reset');
     } else {
-      setStatusMsg({ type: 'error', text: res.message || 'Admin staff email not found.' });
+      setStatusMsg({ type: 'error', text: res.message || 'Email not found.' });
     }
   };
 
@@ -70,7 +76,7 @@ export const AdminForgotPasswordPage: React.FC<AdminForgotPasswordPageProps> = (
     if (res.success) {
       setStatusMsg({
         type: 'success',
-        text: 'Admin password reset successful! You can now sign in with your new password.'
+        text: 'Staff password reset successfully! You can now sign in with your new credentials.'
       });
       setTimeout(() => {
         onNavigate('/admin/login');
@@ -85,16 +91,19 @@ export const AdminForgotPasswordPage: React.FC<AdminForgotPasswordPageProps> = (
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800"
+        className="bg-white dark:bg-slate-900 rounded-3xl shadow-xs overflow-hidden border border-slate-200 dark:border-slate-800"
       >
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-6 text-white text-center">
-          <span className="bg-amber-400 text-slate-950 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1">
+        <div className="bg-slate-900 dark:bg-slate-800/90 p-6 text-white text-center relative border-b border-slate-800">
+          <div className="absolute right-4 top-4">
+            <ThemeToggle size="sm" />
+          </div>
+          <span className="bg-slate-800 dark:bg-slate-700/80 text-slate-200 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1 border border-slate-700">
             <ShieldCheck size={13} /> Staff Password Recovery
           </span>
-          <h2 className="text-2xl font-black mt-2 text-white">
+          <h2 className="text-xl sm:text-2xl font-black mt-2 text-white tracking-tight">
             {step === 'request' ? 'Admin Password Reset' : 'Enter Admin Reset Token'}
           </h2>
-          <p className="text-xs text-amber-300 mt-1 font-medium">
+          <p className="text-xs text-slate-400 mt-1 font-medium">
             Reset your @aaacet.ac.in staff admin password
           </p>
         </div>
@@ -131,7 +140,7 @@ export const AdminForgotPasswordPage: React.FC<AdminForgotPasswordPageProps> = (
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     placeholder="admin@aaacet.ac.in"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-amber-500"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                   />
                 </div>
                 <p className="text-[11px] text-slate-400 mt-1">
@@ -142,13 +151,13 @@ export const AdminForgotPasswordPage: React.FC<AdminForgotPasswordPageProps> = (
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm rounded-2xl shadow-xl transition flex items-center justify-center gap-2 border border-slate-700"
+                className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-extrabold text-sm rounded-2xl shadow-xs transition flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <span>Sending Email...</span>
                 ) : (
                   <>
-                    <Send size={18} className="text-amber-400" />
+                    <Send size={18} />
                     <span>Send Reset Instructions</span>
                   </>
                 )}
@@ -168,7 +177,7 @@ export const AdminForgotPasswordPage: React.FC<AdminForgotPasswordPageProps> = (
                     value={token}
                     onChange={e => setToken(e.target.value)}
                     placeholder="Enter token from email"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-mono font-medium focus:ring-2 focus:ring-amber-500"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-mono font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                   />
                 </div>
               </div>
@@ -185,7 +194,7 @@ export const AdminForgotPasswordPage: React.FC<AdminForgotPasswordPageProps> = (
                     value={newPassword}
                     onChange={e => setNewPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-amber-500"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                   />
                 </div>
               </div>
@@ -202,7 +211,7 @@ export const AdminForgotPasswordPage: React.FC<AdminForgotPasswordPageProps> = (
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-amber-500"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                   />
                 </div>
               </div>
@@ -210,13 +219,13 @@ export const AdminForgotPasswordPage: React.FC<AdminForgotPasswordPageProps> = (
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm rounded-2xl shadow-xl transition flex items-center justify-center gap-2 border border-slate-700"
+                className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-extrabold text-sm rounded-2xl shadow-xs transition flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <span>Updating Password...</span>
                 ) : (
                   <>
-                    <KeyRound size={18} className="text-amber-400" />
+                    <KeyRound size={18} />
                     <span>Reset Admin Password</span>
                   </>
                 )}
@@ -234,7 +243,7 @@ export const AdminForgotPasswordPage: React.FC<AdminForgotPasswordPageProps> = (
             {step === 'request' && (
               <button
                 onClick={() => setStep('reset')}
-                className="text-amber-600 dark:text-amber-400 hover:underline font-bold"
+                className="text-slate-900 dark:text-white hover:underline font-bold"
               >
                 Have a code?
               </button>

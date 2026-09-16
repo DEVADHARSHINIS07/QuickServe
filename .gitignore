@@ -6,3 +6,10 @@ coverage/
 *.log
 .env*
 !.env.example
+application.properties
+database/
+spring/
+.vscode/
+target/
+bun.lock
+MySQL.session.MySQL

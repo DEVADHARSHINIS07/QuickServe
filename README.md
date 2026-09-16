@@ -1,20 +1,37 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# 🍽️ QuickServe
 
-# Run and deploy your AI Studio app
+### Smart Canteen Management System
 
-This contains everything you need to run your app locally.
+> **Order Smart. Eat Fast. Skip the Queue.**
 
-View your app in AI Studio: https://ai.studio/apps/93599f69-6db0-45e2-9f17-f24f90c4707b
+QuickServe is a smart digital canteen system designed to make **college food ordering faster, easier, and more convenient**. Students can explore the menu, place orders, make payments, and track their orders digitally.
 
-## Run Locally
+---
 
-**Prerequisites:**  Node.js
+## ✨ Benefits
 
+* ⚡ Faster food ordering
+* 🕒 Reduces waiting time
+* 📱 Easy & convenient ordering
+* 💳 Online payment support
+* 📦 Real-time order tracking
+* 👨‍💼 Simplified canteen management
+* 🎓 Better student experience
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+---
+
+## 🛠️ Languages & Tools
+
+| Category      | Technologies                                |
+| ------------- | ------------------------------------------- |
+| **Languages** | Java, JavaScript, HTML, CSS                 |
+| **Frontend**  | React.js, Vite, Tailwind CSS                |
+| **Backend**   | Spring Boot, Spring Security, REST API, JWT |
+| **Database**  | MySQL, JPA / Hibernate                      |
+| **Tools**     | Git, GitHub, Postman, VS Code               |
+
+---
+
+### 🚀 QuickServe
+
+**A smarter way to manage your college canteen.**

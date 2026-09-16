@@ -93,9 +93,9 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
                 <p className="text-xs text-slate-400 mt-1">You are all caught up!</p>
               </div>
             ) : (
-              notifications.map((n) => (
+              notifications.map((n, idx) => (
                 <motion.div
-                  key={n.notificationId}
+                  key={`${n.notificationId || 'notif'}_${idx}`}
                   layout
                   onClick={() => {
                     markNotificationRead(n.notificationId);

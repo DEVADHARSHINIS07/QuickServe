@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Mail, KeyRound, Lock, CheckCircle2, AlertCircle, Building2, ArrowLeft, Send } from 'lucide-react';
+import { Mail, KeyRound, Lock, CheckCircle2, AlertCircle, Building2, ArrowLeft, Send, Inbox, ShieldCheck } from 'lucide-react';
 import { useCanteen } from '../../context/CanteenContext';
+import { ThemeToggle } from '../common/ThemeToggle';
+import { CampusInboxModal } from '../common/CampusInboxModal';
 
 interface StudentForgotPasswordPageProps {
   onNavigate: (path: string) => void;
@@ -14,14 +16,16 @@ export const StudentForgotPasswordPage: React.FC<StudentForgotPasswordPageProps>
 
   const [step, setStep] = useState<'request' | 'reset'>('request');
   const [email, setEmail] = useState('');
-  const [token, setToken] = useState('');
+  const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [showInboxModal, setShowInboxModal] = useState(false);
 
-  const handleRequestToken = async (e: React.FormEvent) => {
+  // Request 6-digit code
+  const handleRequestCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatusMsg(null);
 
@@ -29,7 +33,7 @@ export const StudentForgotPasswordPage: React.FC<StudentForgotPasswordPageProps>
     if (!trimmed.endsWith(`@${COLLEGE_DOMAIN}`)) {
       setStatusMsg({
         type: 'error',
-        text: `Please enter a valid AAACET email address ending with @${COLLEGE_DOMAIN}`
+        text: `Original College Email Required: Please enter your official AAACET email address ending with @${COLLEGE_DOMAIN}`
       });
       return;
     }
@@ -39,22 +43,40 @@ export const StudentForgotPasswordPage: React.FC<StudentForgotPasswordPageProps>
     setIsSubmitting(false);
 
     if (res.success) {
+      if (res.otp) {
+        setCode(res.otp);
+      }
       setStatusMsg({
         type: 'success',
-        text: res.message || `Password reset instructions sent to ${trimmed}. Please check your inbox.`
+        text: res.message || `A 6-digit password reset code has been sent to ${trimmed}. Check your email!`
       });
       setStep('reset');
     } else {
-      setStatusMsg({ type: 'error', text: res.message || 'Email not found.' });
+      setStatusMsg({
+        type: 'error',
+        text: res.message || 'Email not found or service unavailable. Please check your address.'
+      });
     }
   };
 
+  // Submit 6-digit code and new password
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatusMsg(null);
 
-    if (!token || !newPassword || !confirmPassword) {
-      setStatusMsg({ type: 'error', text: 'Please fill in all fields.' });
+    const trimmedCode = code.trim();
+    if (!trimmedCode) {
+      setStatusMsg({ type: 'error', text: 'Please enter the 6-digit verification code received in your email.' });
+      return;
+    }
+
+    if (!newPassword || !confirmPassword) {
+      setStatusMsg({ type: 'error', text: 'Please enter and confirm your new password.' });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setStatusMsg({ type: 'error', text: 'New password must be at least 6 characters long.' });
       return;
     }
 
@@ -64,7 +86,7 @@ export const StudentForgotPasswordPage: React.FC<StudentForgotPasswordPageProps>
     }
 
     setIsSubmitting(true);
-    const res = await resetPassword(token, newPassword);
+    const res = await resetPassword(trimmedCode, newPassword, email.trim().toLowerCase());
     setIsSubmitting(false);
 
     if (res.success) {
@@ -74,9 +96,12 @@ export const StudentForgotPasswordPage: React.FC<StudentForgotPasswordPageProps>
       });
       setTimeout(() => {
         onNavigate('/student/login');
-      }, 1500);
+      }, 1800);
     } else {
-      setStatusMsg({ type: 'error', text: res.message || 'Invalid or expired reset token.' });
+      setStatusMsg({
+        type: 'error',
+        text: res.message || 'Invalid or expired 6-digit code. Please verify the code or request a new one.'
+      });
     }
   };
 
@@ -85,17 +110,30 @@ export const StudentForgotPasswordPage: React.FC<StudentForgotPasswordPageProps>
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800"
+        className="bg-white dark:bg-slate-900 rounded-3xl shadow-xs overflow-hidden border border-slate-200 dark:border-slate-800"
       >
-        <div className="bg-gradient-to-r from-orange-400 via-amber-500 to-orange-500 p-6 text-white text-center">
-          <span className="bg-white/20 text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1">
-            <Building2 size={12} /> Student Recovery
+        <div className="bg-slate-900 dark:bg-slate-800/90 p-6 text-white text-center relative border-b border-slate-800">
+          <div className="absolute right-4 top-4 flex items-center gap-2">
+            <button
+              onClick={() => setShowInboxModal(true)}
+              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl transition flex items-center gap-1.5 text-xs font-semibold px-2 border border-slate-700"
+              title="Open Campus Mail Delivery Viewer"
+            >
+              <Inbox size={14} />
+              <span className="hidden sm:inline">Mail</span>
+            </button>
+            <ThemeToggle size="sm" />
+          </div>
+          <span className="bg-slate-800 dark:bg-slate-700/80 text-slate-200 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1 border border-slate-700">
+            <Building2 size={12} /> Student Security
           </span>
-          <h2 className="text-2xl font-black mt-2">
-            {step === 'request' ? 'Student Password Reset' : 'Enter Reset Token'}
+          <h2 className="text-xl sm:text-2xl font-black mt-2 tracking-tight">
+            {step === 'request' ? 'Password Recovery' : 'Enter 6-Digit Code'}
           </h2>
-          <p className="text-xs text-orange-100 mt-1 font-medium">
-            Reset your @aaacet.ac.in student account password
+          <p className="text-xs text-slate-400 mt-1 font-medium">
+            {step === 'request'
+              ? 'Receive a 6-digit verification code to your college email'
+              : `Verification code sent to ${email}`}
           </p>
         </div>
 
@@ -113,15 +151,28 @@ export const StudentForgotPasswordPage: React.FC<StudentForgotPasswordPageProps>
               ) : (
                 <AlertCircle size={18} className="shrink-0 mt-0.5 text-rose-600" />
               )}
-              <span className="leading-relaxed">{statusMsg.text}</span>
+              <div className="flex-1 leading-relaxed">
+                <span>{statusMsg.text}</span>
+                {step === 'reset' && (
+                  <div className="mt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowInboxModal(true)}
+                      className="text-xs font-bold underline hover:opacity-80 inline-flex items-center gap-1"
+                    >
+                      <Inbox size={12} /> View Code in Campus Mail Delivery Viewer
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
           {step === 'request' ? (
-            <form onSubmit={handleRequestToken} className="space-y-4">
+            <form onSubmit={handleRequestCode} className="space-y-4">
               <div>
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Registered College Email
+                  Original College Email Address
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-3 text-slate-400" size={18} />
@@ -131,51 +182,65 @@ export const StudentForgotPasswordPage: React.FC<StudentForgotPasswordPageProps>
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     placeholder="24urcs029@aaacet.ac.in"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-orange-400"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                   />
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1">
-                  We will send password reset instructions to your official college inbox.
+                <p className="text-[11px] text-slate-400 mt-1.5 flex items-center gap-1">
+                  <ShieldCheck size={12} className="text-slate-500" />
+                  We will send a 6-digit security code to this original college email.
                 </p>
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3.5 bg-gradient-to-r from-orange-400 to-amber-500 hover:opacity-95 text-white font-extrabold text-sm rounded-2xl shadow-lg shadow-orange-500/25 transition flex items-center justify-center gap-2"
+                className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-extrabold text-sm rounded-2xl shadow-xs transition flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
-                  <span>Sending Email...</span>
+                  <span>Sending Code...</span>
                 ) : (
                   <>
                     <Send size={18} />
-                    <span>Send Reset Instructions</span>
+                    <span>Send 6-Digit Code to Email</span>
                   </>
                 )}
               </button>
             </form>
           ) : (
-            <form onSubmit={handleResetPassword} className="space-y-3.5">
+            <form onSubmit={handleResetPassword} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Reset Token / Code
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    6-Digit Code from Email *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowInboxModal(true)}
+                    className="text-[11px] text-slate-900 dark:text-white font-bold underline flex items-center gap-1"
+                  >
+                    <Inbox size={12} /> Open Mail
+                  </button>
+                </div>
                 <div className="relative">
                   <KeyRound className="absolute left-3.5 top-2.5 text-slate-400" size={17} />
                   <input
                     type="text"
                     required
-                    value={token}
-                    onChange={e => setToken(e.target.value)}
-                    placeholder="Enter token from email"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-mono font-medium focus:ring-2 focus:ring-orange-400"
+                    maxLength={10}
+                    value={code}
+                    onChange={e => setCode(e.target.value)}
+                    placeholder="Enter 6-digit code"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-mono font-bold tracking-wider text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                   />
                 </div>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Code sent to <strong>{email}</strong> (valid for 15 minutes).
+                </p>
               </div>
 
               <div>
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  New Password
+                  New Password *
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-2.5 text-slate-400" size={17} />
@@ -184,15 +249,15 @@ export const StudentForgotPasswordPage: React.FC<StudentForgotPasswordPageProps>
                     required
                     value={newPassword}
                     onChange={e => setNewPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-orange-400"
+                    placeholder="Min. 6 characters"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                   />
                 </div>
               </div>
 
               <div>
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Confirm New Password
+                  Confirm New Password *
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-2.5 text-slate-400" size={17} />
@@ -201,8 +266,8 @@ export const StudentForgotPasswordPage: React.FC<StudentForgotPasswordPageProps>
                     required
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-orange-400"
+                    placeholder="Re-type new password"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                   />
                 </div>
               </div>
@@ -210,17 +275,27 @@ export const StudentForgotPasswordPage: React.FC<StudentForgotPasswordPageProps>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3.5 bg-gradient-to-r from-orange-400 to-amber-500 hover:opacity-95 text-white font-extrabold text-sm rounded-2xl shadow-lg shadow-orange-500/25 transition flex items-center justify-center gap-2"
+                className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-extrabold text-sm rounded-2xl shadow-xs transition flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
-                  <span>Updating Password...</span>
+                  <span>Verifying Code & Resetting Password...</span>
                 ) : (
                   <>
                     <KeyRound size={18} />
-                    <span>Reset Password</span>
+                    <span>Reset Password with Code</span>
                   </>
                 )}
               </button>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={handleRequestCode}
+                  className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white underline font-semibold"
+                >
+                  Didn't get code? Send code again
+                </button>
+              </div>
             </form>
           )}
 
@@ -234,14 +309,21 @@ export const StudentForgotPasswordPage: React.FC<StudentForgotPasswordPageProps>
             {step === 'request' && (
               <button
                 onClick={() => setStep('reset')}
-                className="text-orange-600 hover:underline font-bold"
+                className="text-slate-900 dark:text-white hover:underline font-bold"
               >
-                Have a code?
+                Already have a code?
               </button>
             )}
           </div>
         </div>
       </motion.div>
+
+      {/* In-app Mail Delivery Viewer */}
+      <CampusInboxModal
+        isOpen={showInboxModal}
+        onClose={() => setShowInboxModal(false)}
+        targetEmail={email.trim() || undefined}
+      />
     </div>
   );
 };

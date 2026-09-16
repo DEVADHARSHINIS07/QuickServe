@@ -18,8 +18,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
   const [showPassword, setShowPassword] = useState(false);
 
   // Form States
-  const [loginId, setLoginId] = useState('24urcs029@aaacet.ac.in');
-  const [loginPass, setLoginPass] = useState('password123');
+  const [loginId, setLoginId] = useState('');
+  const [loginPass, setLoginPass] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
 
   // Register state
@@ -59,13 +59,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
       if (!validateCollegeEmail(rawInput)) {
         setMessage({
           type: 'error',
-          text: `Access Denied: Only AAA College email IDs ending with @${COLLEGE_DOMAIN} are allowed (e.g. xxurxxyy@aaacet.ac.in or 24urcs029@aaacet.ac.in).`
+          text: `Access Denied: Only AAA College email IDs ending with @${COLLEGE_DOMAIN} are allowed (e.g. rollnumber@${COLLEGE_DOMAIN}).`
         });
         return;
       }
       studentId = rawInput.split('@')[0].toUpperCase();
     } else {
-      // User entered ID like '24urcs029' or 'xxurxxyy' -> convert to official college email
       finalEmail = `${rawInput}@${COLLEGE_DOMAIN}`;
       studentId = rawInput.toUpperCase();
     }
@@ -73,9 +72,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
     const studentUser: UserType = {
       userId: studentId,
       studentId: studentId,
-      name: studentId === '24URCS029' ? 'Devadharshini' : `Student (${studentId})`,
+      name: `Student (${studentId})`,
       email: finalEmail,
-      mobile: '+91 98765 43210',
+      mobile: '',
       role: 'student'
     };
 
@@ -162,55 +161,55 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-100 dark:border-slate-800 my-auto"
+          className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 my-auto"
         >
-          {/* Top Bar Tabs */}
-          <div className="bg-gradient-to-r from-orange-400 via-amber-500 to-orange-500 p-4 sm:p-6 text-white relative shrink-0">
+          {/* Top Header */}
+          <div className="bg-slate-900 dark:bg-slate-950 p-4 sm:p-6 text-white relative shrink-0 border-b border-slate-800">
             <button
               onClick={onClose}
-              className="absolute top-3 sm:top-4 right-3 sm:right-4 p-2 bg-black/20 hover:bg-black/30 rounded-full text-white transition"
+              className="absolute top-3 sm:top-4 right-3 sm:right-4 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-300 hover:text-white transition"
             >
               <X size={18} />
             </button>
             <div className="text-center">
-              <span className="bg-white/20 text-white text-[10px] sm:text-[11px] font-bold px-3 py-1 rounded-full backdrop-blur-sm uppercase tracking-wider inline-flex items-center gap-1.5">
+              <span className="bg-slate-800 text-slate-300 text-[10px] sm:text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5 border border-slate-700">
                 <Building2 size={12} /> QuickServe • AAACET
               </span>
-              <h2 className="text-xl sm:text-2xl font-black mt-1.5 sm:mt-2">
+              <h2 className="text-xl sm:text-2xl font-black mt-2 tracking-tight">
                 {activeTab === 'login' && 'Student Sign In'}
                 {activeTab === 'register' && 'Student Registration'}
                 {activeTab === 'admin' && 'Staff Admin Access'}
               </h2>
-              <p className="text-[11px] sm:text-xs text-orange-100 mt-1 font-medium">
+              <p className="text-[11px] sm:text-xs text-slate-400 mt-1 font-medium">
                 {activeTab === 'admin' ? 'Staff & Canteen Management Portal' : 'Exclusive portal for @aaacet.ac.in users'}
               </p>
             </div>
 
             {/* Selector Tabs */}
-            <div className="flex bg-black/20 p-1 rounded-2xl mt-4 sm:mt-5 text-xs font-medium backdrop-blur-md">
+            <div className="flex bg-slate-800/80 p-1 rounded-2xl mt-4 sm:mt-5 text-xs font-medium border border-slate-700">
               <button
                 type="button"
                 onClick={() => { setActiveTab('login'); setMessage(null); }}
-                className={`flex-1 py-2 rounded-xl transition ${activeTab === 'login' ? 'bg-white text-slate-900 font-bold shadow' : 'text-white/80 hover:text-white'}`}
+                className={`flex-1 py-2 rounded-xl transition ${activeTab === 'login' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-400 hover:text-white'}`}
               >
                 Sign In
               </button>
               <button
                 type="button"
                 onClick={() => { setActiveTab('register'); setMessage(null); }}
-                className={`flex-1 py-2 rounded-xl transition ${activeTab === 'register' ? 'bg-white text-slate-900 font-bold shadow' : 'text-white/80 hover:text-white'}`}
+                className={`flex-1 py-2 rounded-xl transition ${activeTab === 'register' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-400 hover:text-white'}`}
               >
                 Register
               </button>
               <button
                 type="button"
                 onClick={() => { setActiveTab('admin'); setMessage(null); }}
-                className={`flex-1 py-2 rounded-xl transition ${activeTab === 'admin' ? 'bg-white text-slate-900 font-bold shadow' : 'text-white/80 hover:text-white'}`}
+                className={`flex-1 py-2 rounded-xl transition ${activeTab === 'admin' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-400 hover:text-white'}`}
               >
                 Admin
               </button>
@@ -220,20 +219,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
           {/* Form Content */}
           <div className="p-4 sm:p-6 overflow-y-auto flex-1">
             {/* Domain Security Notice Banner */}
-            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 rounded-2xl flex items-center gap-2.5 text-xs text-blue-800 dark:text-blue-300">
-              <Building2 size={18} className="shrink-0 text-blue-600 dark:text-blue-400" />
+            <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300">
+              <Building2 size={18} className="shrink-0 text-slate-500" />
               <div>
                 <span className="font-bold block">College Domain Mandatory</span>
-                <span className="text-[11px] text-blue-600 dark:text-blue-400">Only <strong>@aaacet.ac.in</strong> email IDs are accepted (e.g. 24urcs029@aaacet.ac.in).</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">Only <strong>@aaacet.ac.in</strong> email IDs are accepted.</span>
               </div>
             </div>
 
             {message && (
               <div
-                className={`p-3 rounded-2xl text-xs font-medium mb-4 flex items-start gap-2 ${
+                className={`p-3 rounded-2xl text-xs font-medium mb-4 flex items-start gap-2 border ${
                   message.type === 'success'
-                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
-                    : 'bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800'
+                    ? 'bg-slate-50 text-slate-900 border-slate-300 dark:bg-slate-800 dark:text-white dark:border-slate-700'
+                    : 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800'
                 }`}
               >
                 {message.type === 'success' ? (
@@ -253,7 +252,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
                       College Email ID / Roll No
                     </label>
-                    <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/50 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
                       @aaacet.ac.in
                     </span>
                   </div>
@@ -263,11 +262,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
                       type="text"
                       value={loginId}
                       onChange={e => setLoginId(e.target.value)}
-                      placeholder="e.g. 24urcs029@aaacet.ac.in or xxurxxyy"
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      placeholder="e.g. rollnumber@aaacet.ac.in"
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                     />
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">Enter your full @aaacet.ac.in email or student roll number.</p>
                 </div>
 
                 <div>
@@ -281,12 +279,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
                       value={loginPass}
                       onChange={e => setLoginPass(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      className="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
+                      className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -299,14 +297,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
                       type="checkbox"
                       checked={rememberMe}
                       onChange={e => setRememberMe(e.target.checked)}
-                      className="rounded text-orange-500 focus:ring-orange-400"
+                      className="rounded text-slate-900 dark:text-white focus:ring-slate-900 dark:focus:ring-slate-400"
                     />
                     Remember Me
                   </label>
                   <button
                     type="button"
                     onClick={handleForgotPassword}
-                    className="text-orange-600 hover:underline font-semibold"
+                    className="text-slate-700 dark:text-slate-300 hover:underline font-semibold"
                   >
                     Forgot Password?
                   </button>
@@ -314,7 +312,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-orange-400 hover:bg-orange-500 text-white font-bold text-sm rounded-2xl shadow-md transition"
+                  className="w-full py-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-sm rounded-2xl shadow-xs transition"
                 >
                   Sign In to QuickServe
                 </button>
@@ -333,8 +331,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
                       required
                       value={regName}
                       onChange={e => setRegName(e.target.value)}
-                      placeholder="e.g. Devadharshini R"
-                      className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-orange-400"
+                      placeholder="e.g. Student Name"
+                      className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                     />
                   </div>
                 </div>
@@ -355,8 +353,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
                             setRegEmail(`${val.toLowerCase()}@aaacet.ac.in`);
                           }
                         }}
-                        placeholder="24URCS029"
-                        className="w-full pl-9 pr-2 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-orange-400"
+                        placeholder="e.g. 24URCS001"
+                        className="w-full pl-9 pr-2 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                       />
                     </div>
                   </div>
@@ -370,7 +368,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
                         value={regMobile}
                         onChange={e => setRegMobile(e.target.value)}
                         placeholder="+91 9876543210"
-                        className="w-full pl-9 pr-2 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-orange-400"
+                        className="w-full pl-9 pr-2 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                       />
                     </div>
                   </div>
@@ -379,7 +377,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">College Email ID</label>
-                    <span className="text-[10px] font-extrabold text-orange-600 dark:text-orange-400 uppercase">Must end with @aaacet.ac.in</span>
+                    <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">@aaacet.ac.in</span>
                   </div>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-2.5 text-slate-400" size={16} />
@@ -389,7 +387,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
                       value={regEmail}
                       onChange={e => setRegEmail(e.target.value)}
                       placeholder="xxurxxyy@aaacet.ac.in"
-                      className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-orange-400"
+                      className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                     />
                   </div>
                 </div>
@@ -403,7 +401,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
                       value={regPass}
                       onChange={e => setRegPass(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-orange-400"
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                     />
                   </div>
                   <div>
@@ -414,14 +412,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
                       value={regConfirmPass}
                       onChange={e => setRegConfirmPass(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-orange-400"
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                     />
                   </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 mt-2 bg-orange-400 hover:bg-orange-500 text-white font-bold text-xs rounded-xl shadow transition"
+                  className="w-full py-2.5 mt-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-xs rounded-xl shadow-xs transition"
                 >
                   Create QuickServe Account
                 </button>
@@ -431,8 +429,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
             {/* ADMIN LOGIN FORM */}
             {activeTab === 'admin' && (
               <form onSubmit={handleAdminLogin} className="space-y-4">
-                <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-2xl flex items-center gap-2 text-xs text-amber-800 dark:text-amber-300">
-                  <ShieldCheck size={20} className="shrink-0 text-amber-600" />
+                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
+                  <ShieldCheck size={20} className="shrink-0 text-slate-500" />
                   <span>Authorized canteen staff only. Access requiring @aaacet.ac.in credentials.</span>
                 </div>
 
@@ -447,7 +445,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
                       value={adminUser}
                       onChange={e => setAdminUser(e.target.value)}
                       placeholder="admin@aaacet.ac.in"
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm focus:ring-2 focus:ring-orange-400"
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                     />
                   </div>
                 </div>
@@ -463,12 +461,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
                       value={adminPass}
                       onChange={e => setAdminPass(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm focus:ring-2 focus:ring-orange-400"
+                      className="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
+                      className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -477,7 +475,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-slate-900 text-white font-bold text-sm rounded-2xl hover:bg-slate-800 transition shadow-md"
+                  className="w-full py-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-sm rounded-2xl transition shadow-xs"
                 >
                   Access Staff Portal
                 </button>
@@ -489,4 +487,3 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
     </AnimatePresence>
   );
 };
-

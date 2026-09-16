@@ -30,7 +30,9 @@ export const FoodCard: React.FC<FoodCardProps> = ({ food, onOpenQuickView }) => 
           src={food.image}
           alt={food.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
+          loading="eager"
+          decoding="async"
+          referrerPolicy="no-referrer"
         />
 
         {/* Gradient Overlay */}

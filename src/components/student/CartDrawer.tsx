@@ -113,6 +113,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     src={item.image}
                     alt={item.name}
                     className="w-16 h-16 rounded-xl object-cover shrink-0"
+                    loading="eager"
+                    decoding="async"
+                    referrerPolicy="no-referrer"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">

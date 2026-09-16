@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ThemeProvider } from './context/ThemeContext';
 import { CanteenProvider, useCanteen } from './context/CanteenContext';
 import { Header } from './components/common/Header';
 import { MobileNav } from './components/common/MobileNav';
@@ -16,7 +17,6 @@ import { AdminForgotPasswordPage } from './components/auth/AdminForgotPasswordPa
 import { StudentDashboard } from './components/student/StudentDashboard';
 import { CartDrawer } from './components/student/CartDrawer';
 import { CheckoutModal } from './components/student/CheckoutModal';
-import { UPIPaymentModal } from './components/student/UPIPaymentModal';
 import { OrderTrackingView } from './components/student/OrderTrackingView';
 import { OrderHistoryView } from './components/student/OrderHistoryView';
 import { FavoritesView } from './components/student/FavoritesView';
@@ -28,6 +28,10 @@ import { AdminScheduleSettings } from './components/admin/AdminScheduleSettings'
 import { AdminAnalyticsReports } from './components/admin/AdminAnalyticsReports';
 import { Order } from './types';
 
+const UPIPaymentModal = React.lazy(() =>
+  import('./components/student/UPIPaymentModal').then((m) => ({ default: m.UPIPaymentModal }))
+);
+
 const MainApp: React.FC = () => {
   const { isAuthenticated, currentRole, switchRole } = useCanteen();
 
@@ -37,7 +41,7 @@ const MainApp: React.FC = () => {
     if (pathname && pathname !== '/') return pathname;
     const hash = window.location.hash.replace('#', '');
     if (hash) return hash;
-    return '/student/login'; // Default landing page on application open
+    return '/student/menu'; // Default landing page on application open
   };
 
   const [currentPath, setCurrentPath] = useState<string>(getCurrentPathFromLocation);
@@ -73,8 +77,6 @@ const MainApp: React.FC = () => {
   // Redirect Logic for Protected Routes
   useEffect(() => {
     const isStudentProtectedRoute = [
-      '/student/menu',
-      '/student/cart',
       '/student/checkout',
       '/student/payment',
       '/student/orders',
@@ -93,7 +95,7 @@ const MainApp: React.FC = () => {
 
     if (isStudentProtectedRoute) {
       if (!isAuthenticated) {
-        setAuthBannerMsg('Please login to your student account before placing or viewing orders.');
+        setAuthBannerMsg('Please sign in to your student account to access your orders and account features.');
         navigateTo('/student/login');
       } else if (currentRole !== 'student') {
         navigateTo('/admin/dashboard');
@@ -151,8 +153,14 @@ const MainApp: React.FC = () => {
     navigateTo('/student/login');
   };
 
+  const isAuthRoute =
+    currentPath.includes('/login') ||
+    currentPath.includes('/register') ||
+    currentPath.includes('/forgot-password') ||
+    currentPath.includes('/reset-password');
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50/50 via-amber-50/30 to-slate-50 dark:from-slate-950 dark:to-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors selection:bg-orange-400 selection:text-white pb-24 md:pb-8">
+    <div className={`min-h-screen bg-slate-50/70 dark:bg-slate-950 text-slate-850 dark:text-slate-100 flex flex-col font-sans transition-colors selection:bg-slate-900 selection:text-white ${isAuthRoute ? 'pb-8' : 'pb-24 md:pb-8'}`}>
       {/* Top Header */}
       <Header
         onOpenCart={() => setIsCartOpen(true)}
@@ -265,11 +273,13 @@ const MainApp: React.FC = () => {
       </main>
 
       {/* Mobile Bottom Navigation Bar */}
-      <MobileNav
-        activeView={getActiveView()}
-        onNavigate={navigateTo}
-        onOpenCart={() => setIsCartOpen(true)}
-      />
+      {!isAuthRoute && (
+        <MobileNav
+          activeView={getActiveView()}
+          onNavigate={navigateTo}
+          onOpenCart={() => setIsCartOpen(true)}
+        />
+      )}
 
       {/* Drawers & Modals */}
       <CartDrawer
@@ -288,13 +298,17 @@ const MainApp: React.FC = () => {
         onOrderPlacedCash={handleCashOrderPlaced}
       />
 
-      <UPIPaymentModal
-        isOpen={isUPIOpen}
-        onClose={() => setIsUPIOpen(false)}
-        requestedDate={checkoutDate}
-        requestedTime={checkoutTime}
-        onPaymentSuccess={handleUPIPaymentSuccess}
-      />
+      {isUPIOpen && (
+        <React.Suspense fallback={null}>
+          <UPIPaymentModal
+            isOpen={isUPIOpen}
+            onClose={() => setIsUPIOpen(false)}
+            requestedDate={checkoutDate}
+            requestedTime={checkoutTime}
+            onPaymentSuccess={handleUPIPaymentSuccess}
+          />
+        </React.Suspense>
+      )}
 
       <NotificationDrawer
         isOpen={isNotifOpen}
@@ -315,8 +329,10 @@ const MainApp: React.FC = () => {
 
 export default function App() {
   return (
-    <CanteenProvider>
-      <MainApp />
-    </CanteenProvider>
+    <ThemeProvider>
+      <CanteenProvider>
+        <MainApp />
+      </CanteenProvider>
+    </ThemeProvider>
   );
 }

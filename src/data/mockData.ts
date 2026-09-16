@@ -1,19 +1,19 @@
 import { FoodItem, User, CanteenConfig, Order, NotificationItem } from '../types';
 
 export const INITIAL_STUDENT: User = {
-  userId: 'STU1024',
-  studentId: '24URCS029',
-  name: 'Devadharshini',
-  email: '24urcs029@aaacet.ac.in',
-  mobile: '+91 98765 43210',
+  userId: '',
+  studentId: '',
+  name: 'Student Guest',
+  email: '',
+  mobile: '',
   role: 'student',
-  avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80'
+  avatar: ''
 };
 
 export const INITIAL_ADMIN: User = {
-  userId: 'ADM001',
+  userId: 'USR_ADM001',
   studentId: 'ADM001',
-  name: 'Canteen Supervisor',
+  name: 'QuickServe Canteen Admin',
   email: 'admin@aaacet.ac.in',
   mobile: '+91 91234 56789',
   role: 'admin',
@@ -27,7 +27,7 @@ export const INITIAL_CANTEEN_CONFIG: CanteenConfig = {
   openingTime: '08:00',
   closingTime: '19:00',
   upiId: 'canteen.aaacet@okaxis',
-  merchantName: 'Campus Food Services',
+  merchantName: 'AAA College Canteen',
   noticeMessage: 'Freshly cooked lunch meals available from 12:00 PM to 2:30 PM!',
   workingHours: [
     { day: 'Monday', isOpen: true, sessions: [{ name: 'Breakfast', startTime: '08:00', endTime: '11:00' }, { name: 'Lunch', startTime: '12:00', endTime: '15:00' }, { name: 'Snacks', startTime: '16:00', endTime: '19:00' }] },
@@ -203,93 +203,7 @@ export const INITIAL_FOOD_ITEMS: FoodItem[] = [
   }
 ];
 
-export const INITIAL_ORDERS: Order[] = [
-  {
-    orderId: 'SC20260810001',
-    studentId: 'STU1024',
-    studentName: 'Devadharshini',
-    studentMobile: '+91 98765 43210',
-    items: [
-      { foodId: 'F101', name: 'Veg Loaded Burger', price: 60, quantity: 2, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80', vegType: 'veg' },
-      { foodId: 'F106', name: 'Fresh Orange Mint Juice', price: 35, quantity: 1, image: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?w=600&auto=format&fit=crop&q=80', vegType: 'veg' }
-    ],
-    subtotal: 155,
-    totalAmount: 155,
-    paymentMethod: 'UPI',
-    paymentStatus: 'PAID',
-    transactionId: 'UPI-992182740',
-    requestedReadyDate: 'Today',
-    requestedReadyTime: '13:15',
-    priority: 'HIGH',
-    orderStatus: 'Ready for Pickup',
-    queueNumber: 'A-24',
-    createdAt: '12:45 PM',
-    acceptedAt: '12:48 PM',
-    preparingAt: '12:55 PM',
-    readyAt: '1:10 PM',
-    historyTimeline: [
-      { status: 'Order Placed', timestamp: '12:45 PM', note: 'Order created via UPI' },
-      { status: 'Waiting for Confirmation', timestamp: '12:45 PM' },
-      { status: 'Order Accepted', timestamp: '12:48 PM', note: 'Accepted by Canteen Admin' },
-      { status: 'Preparing', timestamp: '12:55 PM', note: 'Chef started preparation' },
-      { status: 'Ready for Pickup', timestamp: '1:10 PM', note: 'Order ready at Counter 2' }
-    ]
-  },
-  {
-    orderId: 'SC20260810002',
-    studentId: 'STU1024',
-    studentName: 'Devadharshini',
-    studentMobile: '+91 98765 43210',
-    items: [
-      { foodId: 'F102', name: 'Paneer Tikka Pizza (7")', price: 110, quantity: 1, image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&auto=format&fit=crop&q=80', vegType: 'veg' }
-    ],
-    subtotal: 110,
-    totalAmount: 110,
-    paymentMethod: 'UPI',
-    paymentStatus: 'REFUNDED',
-    transactionId: 'UPI-881239102',
-    requestedReadyDate: 'Today',
-    requestedReadyTime: '13:30',
-    priority: 'NORMAL',
-    orderStatus: 'Rejected',
-    rejectionReason: 'Pizza oven maintenance under progress.',
-    refundInfo: {
-      refundId: 'RF-994182',
-      amount: 110,
-      status: 'COMPLETED',
-      initiatedAt: '1:02 PM',
-      completedAt: '1:03 PM',
-      refundTransactionId: 'REF-8827103948'
-    },
-    queueNumber: 'A-25',
-    createdAt: '1:00 PM',
-    historyTimeline: [
-      { status: 'Order Placed', timestamp: '1:00 PM' },
-      { status: 'Waiting for Confirmation', timestamp: '1:00 PM' },
-      { status: 'Rejected', timestamp: '1:02 PM', note: 'Reason: Pizza oven maintenance under progress.' }
-    ]
-  }
-];
+export const INITIAL_ORDERS: Order[] = [];
 
-export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
-  {
-    notificationId: 'N101',
-    recipientId: 'STU1024',
-    orderId: 'SC20260810001',
-    type: 'order_ready',
-    title: '🔔 Your food is ready!',
-    message: 'Order #SC20260810001 is ready for pickup at Counter 2! Queue Number: A-24.',
-    readStatus: false,
-    createdAt: '10 mins ago'
-  },
-  {
-    notificationId: 'N102',
-    recipientId: 'STU1024',
-    orderId: 'SC20260810002',
-    type: 'refund',
-    title: '💰 Refund Completed',
-    message: '₹110 refund for rejected order #SC20260810002 has been successfully returned to your account.',
-    readStatus: true,
-    createdAt: '1 hour ago'
-  }
-];
+export const INITIAL_NOTIFICATIONS: NotificationItem[] = [];
+

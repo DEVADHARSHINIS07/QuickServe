@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { User, Mail, Phone, Lock, CheckCircle2, AlertCircle, ShieldCheck, UserPlus, Building2 } from 'lucide-react';
 import { useCanteen } from '../../context/CanteenContext';
+import { ThemeToggle } from '../common/ThemeToggle';
 
 interface AdminRegisterPageProps {
   onNavigate: (path: string) => void;
@@ -76,24 +77,27 @@ export const AdminRegisterPage: React.FC<AdminRegisterPageProps> = ({ onNavigate
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800"
+        className="bg-white dark:bg-slate-900 rounded-3xl shadow-xs overflow-hidden border border-slate-200 dark:border-slate-800"
       >
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-6 text-white text-center">
-          <span className="bg-amber-400 text-slate-950 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1">
+        <div className="bg-slate-900 dark:bg-slate-800/90 p-6 text-white text-center relative border-b border-slate-800">
+          <div className="absolute right-4 top-4">
+            <ThemeToggle size="sm" />
+          </div>
+          <span className="bg-slate-800 dark:bg-slate-700/80 text-slate-200 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1 border border-slate-700">
             <ShieldCheck size={13} /> Staff Registration
           </span>
-          <h2 className="text-2xl font-black mt-2 text-white">Register Admin Staff Account</h2>
-          <p className="text-xs text-amber-300 mt-1 font-medium">
+          <h2 className="text-xl sm:text-2xl font-black mt-2 text-white tracking-tight">Register Admin Staff Account</h2>
+          <p className="text-xs text-slate-400 mt-1 font-medium">
             Smart Canteen System Management Portal • AAACET
           </p>
         </div>
 
         <div className="p-6 space-y-4">
-          <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-2xl flex items-center gap-2.5 text-xs text-amber-900 dark:text-amber-300">
-            <Building2 size={20} className="shrink-0 text-amber-600" />
+          <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-2xl flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300">
+            <Building2 size={20} className="shrink-0 text-slate-900 dark:text-slate-100" />
             <div>
-              <span className="font-bold block">College Staff Domain Mandatory</span>
-              <span className="text-[11px] text-amber-700 dark:text-amber-400">
+              <span className="font-bold block text-slate-900 dark:text-white">College Staff Domain Mandatory</span>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400">
                 Only authorized <strong>@aaacet.ac.in</strong> staff emails are permitted to register as Admin.
               </span>
             </div>
@@ -119,7 +123,7 @@ export const AdminRegisterPage: React.FC<AdminRegisterPageProps> = ({ onNavigate
           <form onSubmit={handleSubmit} className="space-y-3.5">
             <div>
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                Admin Full Name
+                Full Name
               </label>
               <div className="relative">
                 <User className="absolute left-3.5 top-2.5 text-slate-400" size={17} />
@@ -128,48 +132,50 @@ export const AdminRegisterPage: React.FC<AdminRegisterPageProps> = ({ onNavigate
                   required
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder="e.g. Dr. K. Ramesh (Canteen Admin)"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-amber-500"
+                  placeholder="e.g. Canteen Manager"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                 />
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
-                  Staff Email Address
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Staff Mobile
                 </label>
-                <span className="text-[10px] font-extrabold text-amber-600 uppercase">
-                  @aaacet.ac.in Required
-                </span>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                  <input
+                    type="tel"
+                    required
+                    value={mobile}
+                    onChange={e => setMobile(e.target.value)}
+                    placeholder="9876543210"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
+                  />
+                </div>
               </div>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-2.5 text-slate-400" size={17} />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="admin@aaacet.ac.in"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-amber-500"
-                />
-              </div>
-            </div>
 
-            <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                Mobile Number
-              </label>
-              <div className="relative">
-                <Phone className="absolute left-3.5 top-2.5 text-slate-400" size={17} />
-                <input
-                  type="tel"
-                  required
-                  value={mobile}
-                  onChange={e => setMobile(e.target.value)}
-                  placeholder="+91 9123456789"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-amber-500"
-                />
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                    Staff Email
+                  </label>
+                  <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                    @aaacet.ac.in
+                  </span>
+                </div>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="staff@aaacet.ac.in"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
+                  />
+                </div>
               </div>
             </div>
 
@@ -186,7 +192,7 @@ export const AdminRegisterPage: React.FC<AdminRegisterPageProps> = ({ onNavigate
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-amber-500"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                   />
                 </div>
               </div>
@@ -203,7 +209,7 @@ export const AdminRegisterPage: React.FC<AdminRegisterPageProps> = ({ onNavigate
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-amber-500"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
                   />
                 </div>
               </div>
@@ -212,24 +218,24 @@ export const AdminRegisterPage: React.FC<AdminRegisterPageProps> = ({ onNavigate
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3.5 mt-2 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm rounded-2xl shadow-xl transition flex items-center justify-center gap-2 border border-slate-700"
+              className="w-full py-3.5 mt-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-extrabold text-sm rounded-2xl shadow-xs transition flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <span>Registering Admin...</span>
               ) : (
                 <>
-                  <UserPlus size={18} className="text-amber-400" />
+                  <UserPlus size={18} />
                   <span>Register Staff Account</span>
                 </>
               )}
             </button>
           </form>
 
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-500">
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
             Already registered as admin?{' '}
             <button
               onClick={() => onNavigate('/admin/login')}
-              className="text-amber-600 dark:text-amber-400 hover:underline font-extrabold ml-1"
+              className="text-slate-900 dark:text-white hover:underline font-extrabold ml-1"
             >
               Sign In to Admin Account
             </button>

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
-import { Clock, Calendar, CheckCircle2, Save, Bell, ShieldCheck } from 'lucide-react';
+import { Clock, CheckCircle2, Save, QrCode } from 'lucide-react';
 import { useCanteen } from '../../context/CanteenContext';
+import { buildUPIPaymentURI, generateQRSVGString } from '../../utils/qrCode';
 
 export const AdminScheduleSettings: React.FC = () => {
   const { canteenConfig, updateCanteenConfig } = useCanteen();
@@ -13,6 +14,17 @@ export const AdminScheduleSettings: React.FC = () => {
   const [upiId, setUpiId] = useState(canteenConfig.upiId);
   const [noticeMessage, setNoticeMessage] = useState(canteenConfig.noticeMessage || '');
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  const adminPreviewSvg = useMemo(() => {
+    if (!upiId.trim()) return '';
+    const uri = buildUPIPaymentURI({
+      upiId: upiId.trim(),
+      payeeName: canteenName || 'AAA College Canteen',
+      amount: 10,
+      note: 'Admin Test Scan'
+    });
+    return generateQRSVGString(uri, 1);
+  }, [upiId, canteenName]);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,8 +43,8 @@ export const AdminScheduleSettings: React.FC = () => {
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-20 md:pb-10">
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-          <Clock className="text-amber-500" size={26} /> Canteen Working Hours & Settings
+        <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+          <Clock className="text-slate-900 dark:text-white" size={24} /> Working Hours & Settings
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400">
           Configure daily operating hours, UPI payment parameters, and top announcement banner
@@ -43,17 +55,17 @@ export const AdminScheduleSettings: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 rounded-2xl text-xs font-bold flex items-center gap-2"
+          className="p-4 bg-slate-50 text-slate-900 dark:bg-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-bold flex items-center gap-2"
         >
-          <CheckCircle2 size={18} /> Canteen settings saved successfully!
+          <CheckCircle2 size={18} className="text-emerald-500" /> Canteen settings saved successfully!
         </motion.div>
       )}
 
-      <form onSubmit={handleSave} className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-100 dark:border-slate-700 shadow-sm space-y-6">
+      <form onSubmit={handleSave} className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-xs space-y-6">
         {/* Operating Hours Box */}
         <div className="space-y-4">
-          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider text-amber-600">
-            ⏰ Canteen Operating Hours
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            Canteen Operating Hours
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -63,7 +75,7 @@ export const AdminScheduleSettings: React.FC = () => {
                 type="time"
                 value={openingTime}
                 onChange={e => setOpeningTime(e.target.value)}
-                className="w-full p-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl font-extrabold text-base"
+                className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-extrabold text-base text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
               />
             </div>
 
@@ -73,16 +85,16 @@ export const AdminScheduleSettings: React.FC = () => {
                 type="time"
                 value={closingTime}
                 onChange={e => setClosingTime(e.target.value)}
-                className="w-full p-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl font-extrabold text-base"
+                className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-extrabold text-base text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
               />
             </div>
           </div>
         </div>
 
         {/* Canteen Identity Details */}
-        <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-700 text-xs">
-          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider text-amber-600">
-            🏫 Branding & UPI Payment Gateway
+        <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            Branding & UPI Payment Gateway
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -92,7 +104,7 @@ export const AdminScheduleSettings: React.FC = () => {
                 type="text"
                 value={canteenName}
                 onChange={e => setCanteenName(e.target.value)}
-                className="w-full p-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl font-bold"
+                className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
               />
             </div>
 
@@ -102,39 +114,70 @@ export const AdminScheduleSettings: React.FC = () => {
                 type="text"
                 value={collegeName}
                 onChange={e => setCollegeName(e.target.value)}
-                className="w-full p-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl font-bold"
+                className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
               />
             </div>
 
-            <div className="sm:col-span-2">
-              <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Canteen Official UPI VPA ID</label>
-              <input
-                type="text"
-                value={upiId}
-                onChange={e => setUpiId(e.target.value)}
-                className="w-full p-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl font-mono font-bold"
-              />
+            <div className="sm:col-span-2 space-y-3">
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Canteen Official UPI VPA ID</label>
+                <input
+                  type="text"
+                  value={upiId}
+                  onChange={e => setUpiId(e.target.value)}
+                  placeholder="e.g. canteen.aaacet@okaxis"
+                  className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
+                />
+              </div>
+
+              {/* Live Scannable Original QR Code Preview for Admin Verification */}
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center gap-4">
+                <div className="w-24 h-24 bg-white p-2 rounded-xl shadow-xs shrink-0 flex items-center justify-center border border-slate-200">
+                  {adminPreviewSvg ? (
+                    <div
+                      className="w-full h-full flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"
+                      dangerouslySetInnerHTML={{ __html: adminPreviewSvg }}
+                    />
+                  ) : (
+                    <QrCode size={36} className="text-slate-300" />
+                  )}
+                </div>
+                <div className="text-left space-y-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Live Original QR Preview
+                    </span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  </div>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white">
+                    Scan with PhonePe, GPay, or Paytm to verify canteen receiving account
+                  </p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                    Target VPA: {upiId || 'Not configured'}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Announcement Notice */}
-        <div className="space-y-2 pt-4 border-t border-slate-100 dark:border-slate-700 text-xs">
-          <label className="font-extrabold text-slate-900 dark:text-white block uppercase tracking-wider text-amber-600">
-            📢 Campus Top Notice Banner
+        <div className="space-y-2 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+          <label className="font-bold text-slate-500 block uppercase tracking-wider">
+            Campus Top Notice Banner
           </label>
           <input
             type="text"
             value={noticeMessage}
             onChange={e => setNoticeMessage(e.target.value)}
             placeholder="e.g. Freshly cooked lunch meals available from 12:00 PM!"
-            className="w-full p-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl font-medium"
+            className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
           />
         </div>
 
         <button
           type="submit"
-          className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-extrabold text-sm rounded-2xl shadow-lg shadow-amber-500/20 hover:opacity-95 transition flex items-center justify-center gap-2"
+          className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-extrabold text-sm rounded-2xl shadow-xs transition flex items-center justify-center gap-2"
         >
           <Save size={18} />
           <span>Save Configuration</span>

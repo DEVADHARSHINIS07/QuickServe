@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { ShoppingBag, Bell, User, Utensils, Shield, LogOut, CheckCircle, Clock, AlertCircle, LogIn, ChevronDown } from 'lucide-react';
+import { ShoppingBag, Bell, User, Utensils, Shield, LogOut, CheckCircle, Clock, AlertCircle, LogIn, ChevronDown, Mail } from 'lucide-react';
 import { useCanteen } from '../../context/CanteenContext';
+import { ThemeToggle } from './ThemeToggle';
+import { CampusInboxModal } from './CampusInboxModal';
 
 interface HeaderProps {
   onOpenCart: () => void;
@@ -29,6 +31,7 @@ export const Header: React.FC<HeaderProps> = ({
   } = useCanteen();
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showMailModal, setShowMailModal] = useState(false);
 
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -46,8 +49,8 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors">
       {/* Top Announcement Notice */}
       {canteenConfig.noticeMessage && (
-        <div className="bg-gradient-to-r from-orange-400 via-amber-500 to-orange-500 text-white text-[11px] sm:text-xs py-1.5 px-4 text-center font-semibold flex items-center justify-center gap-2 overflow-hidden shadow-inner">
-          <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-extrabold">Campus Notice</span>
+        <div className="bg-slate-900 dark:bg-slate-800 text-white text-[11px] sm:text-xs py-1.5 px-4 text-center font-medium flex items-center justify-center gap-2 overflow-hidden border-b border-slate-800">
+          <span className="bg-white/15 px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-bold">Notice</span>
           <span className="truncate">{canteenConfig.noticeMessage}</span>
         </div>
       )}
@@ -58,7 +61,7 @@ export const Header: React.FC<HeaderProps> = ({
           className="flex items-center gap-2 sm:gap-3 cursor-pointer min-w-0"
           onClick={() => onNavigate(currentRole === 'admin' ? '/admin/dashboard' : '/student/menu')}
         >
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-orange-400 text-white flex items-center justify-center shadow-md sm:shadow-lg shadow-orange-200/80 dark:shadow-none shrink-0 font-black">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow-xs shrink-0 font-black">
             <Utensils size={18} className="sm:w-5 sm:h-5" />
           </div>
           <div className="min-w-0">
@@ -70,8 +73,8 @@ export const Header: React.FC<HeaderProps> = ({
               <span
                 className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2.5 py-0.5 rounded-full shrink-0 ${
                   isCanteenOpen
-                    ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800'
-                    : 'bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-950/60 dark:text-rose-400 dark:border-rose-800'
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800'
+                    : 'bg-rose-50 text-rose-700 border border-rose-200/60 dark:bg-rose-950/60 dark:text-rose-400 dark:border-rose-800'
                 }`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${isCanteenOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
@@ -85,30 +88,30 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Navigation Tabs (Desktop) */}
-        <nav className="hidden md:flex items-center gap-1.5 bg-slate-100/80 dark:bg-slate-800/80 p-1 rounded-full text-xs font-medium">
+        <nav className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-full text-xs font-medium">
           {currentRole === 'student' ? (
             <>
               <button
                 onClick={() => onNavigate('/student/menu')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'menu' || activeView === 'student_menu' ? 'bg-orange-400 text-white font-bold shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'}`}
+                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'menu' || activeView === 'student_menu' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 Food Menu
               </button>
               <button
                 onClick={() => onNavigate('/student/order-tracking')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'tracking' || activeView === 'student_tracking' ? 'bg-orange-400 text-white font-bold shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'}`}
+                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'tracking' || activeView === 'student_tracking' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 Live Tracking
               </button>
               <button
                 onClick={() => onNavigate('/student/history')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'history' || activeView === 'student_history' ? 'bg-orange-400 text-white font-bold shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'}`}
+                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'history' || activeView === 'student_history' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 Order History
               </button>
               <button
                 onClick={() => onNavigate('/student/favorites')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'favorites' || activeView === 'student_favorites' ? 'bg-orange-400 text-white font-bold shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'}`}
+                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'favorites' || activeView === 'student_favorites' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 Favorites
               </button>
@@ -117,31 +120,31 @@ export const Header: React.FC<HeaderProps> = ({
             <>
               <button
                 onClick={() => onNavigate('/admin/dashboard')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'admin_dashboard' ? 'bg-slate-900 text-orange-400 font-bold shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'}`}
+                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'admin_dashboard' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 Dashboard
               </button>
               <button
                 onClick={() => onNavigate('/admin/orders')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'admin_orders' ? 'bg-slate-900 text-orange-400 font-bold shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'}`}
+                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'admin_orders' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 Order Queue
               </button>
               <button
                 onClick={() => onNavigate('/admin/food')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'admin_food' ? 'bg-slate-900 text-orange-400 font-bold shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'}`}
+                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'admin_food' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 Food Manager
               </button>
               <button
                 onClick={() => onNavigate('/admin/schedule')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'admin_schedule' ? 'bg-slate-900 text-orange-400 font-bold shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'}`}
+                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'admin_schedule' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 Schedule
               </button>
               <button
                 onClick={() => onNavigate('/admin/analytics')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'admin_analytics' ? 'bg-slate-900 text-orange-400 font-bold shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'}`}
+                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'admin_analytics' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 Analytics
               </button>
@@ -150,16 +153,29 @@ export const Header: React.FC<HeaderProps> = ({
         </nav>
 
         {/* Right Actions & Controls */}
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          {/* Lite / Dark Theme Toggle */}
+          <ThemeToggle />
+
+          {/* Campus Mail Viewer */}
+          <button
+            onClick={() => setShowMailModal(true)}
+            className="p-2 sm:p-2.5 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:text-slate-900 dark:hover:text-white transition relative shadow-xs"
+            aria-label="Campus Mail Viewer"
+            title="Campus Mail Delivery Viewer"
+          >
+            <Mail size={16} className="sm:w-[18px] sm:h-[18px]" />
+          </button>
+
           {/* Notifications Trigger */}
           <button
             onClick={onOpenNotifications}
-            className="p-2 sm:p-2.5 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:text-orange-500 transition relative shadow-xs"
+            className="p-2 sm:p-2.5 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:text-slate-900 dark:hover:text-white transition relative shadow-xs"
             aria-label="Notifications"
           >
             <Bell size={16} className="sm:w-[18px] sm:h-[18px]" />
             {unreadNotificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-orange-500 text-white font-bold text-[9px] sm:text-[10px] w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow ring-2 ring-white">
+              <span className="absolute -top-1 -right-1 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-[9px] sm:text-[10px] w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow ring-2 ring-white dark:ring-slate-900">
                 {unreadNotificationCount}
               </span>
             )}
@@ -169,12 +185,12 @@ export const Header: React.FC<HeaderProps> = ({
           {currentRole === 'student' && (
             <button
               onClick={onOpenCart}
-              className="p-2 sm:p-2.5 rounded-full bg-orange-400 text-white hover:bg-orange-500 transition font-bold text-xs flex items-center gap-1.5 sm:gap-2 shadow-md shadow-orange-100 dark:shadow-none relative"
+              className="p-2 sm:p-2.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 transition font-bold text-xs flex items-center gap-1.5 sm:gap-2 shadow-xs relative"
             >
               <ShoppingBag size={16} className="sm:w-[18px] sm:h-[18px]" />
               <span className="hidden sm:inline font-bold">Cart</span>
               {cartItemCount > 0 && (
-                <span className="bg-slate-900 text-white font-extrabold text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full">
+                <span className="bg-white/20 dark:bg-slate-900/20 text-white dark:text-slate-900 font-extrabold text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full">
                   {cartItemCount}
                 </span>
               )}
@@ -188,12 +204,12 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="flex items-center gap-1 sm:gap-2 p-1 sm:px-3 sm:py-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full border border-slate-200 dark:border-slate-700 transition text-xs font-bold text-slate-800 dark:text-slate-200 shadow-xs"
               >
-                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-orange-100 dark:bg-slate-700 text-orange-600 dark:text-orange-300 flex items-center justify-center font-bold text-[11px] sm:text-xs shrink-0">
-                  {currentUser.name.charAt(0)}
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold text-[11px] sm:text-xs shrink-0">
+                  {(currentUser?.name || 'U').charAt(0).toUpperCase()}
                 </div>
                 <span className="hidden sm:inline text-left leading-tight">
-                  <span className="block font-bold truncate max-w-[90px]">{currentUser.name.split(' ')[0]}</span>
-                  <span className="text-[10px] text-slate-400 block uppercase font-medium truncate max-w-[90px]">{currentUser.studentId}</span>
+                  <span className="block font-bold truncate max-w-[90px]">{(currentUser?.name || 'User').split(' ')[0]}</span>
+                  <span className="text-[10px] text-slate-400 block uppercase font-medium truncate max-w-[90px]">{currentUser?.studentId || ''}</span>
                 </span>
                 <ChevronDown size={12} className="text-slate-400 hidden sm:block" />
               </button>
@@ -204,7 +220,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
                     <p className="font-extrabold text-slate-900 dark:text-white truncate">{currentUser.name}</p>
                     <p className="text-[11px] text-slate-400 truncate mt-0.5">{currentUser.email}</p>
-                    <span className="inline-block mt-1 bg-orange-100 text-orange-800 dark:bg-orange-950/80 dark:text-orange-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                    <span className="inline-block mt-1 bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
                       Role: {currentRole}
                     </span>
                   </div>
@@ -223,7 +239,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-1 sm:gap-1.5">
               <button
                 onClick={() => onNavigate('/student/login')}
-                className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-orange-400 hover:bg-orange-500 text-white font-extrabold text-[11px] sm:text-xs rounded-full shadow transition flex items-center gap-1 sm:gap-1.5"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-[11px] sm:text-xs rounded-full shadow-xs transition flex items-center gap-1 sm:gap-1.5"
               >
                 <LogIn size={13} className="sm:w-[15px] sm:h-[15px]" />
                 <span>Login</span>
@@ -231,15 +247,20 @@ export const Header: React.FC<HeaderProps> = ({
 
               <button
                 onClick={() => onNavigate('/admin/login')}
-                className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-[11px] sm:text-xs rounded-full shadow transition flex items-center gap-1 sm:gap-1.5"
+                className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-[11px] sm:text-xs rounded-full transition flex items-center gap-1 sm:gap-1.5"
               >
-                <Shield size={13} className="text-amber-400 sm:w-[14px] sm:h-[14px]" />
+                <Shield size={13} className="text-slate-600 dark:text-slate-400 sm:w-[14px] sm:h-[14px]" />
                 <span className="hidden xs:inline">Admin</span>
               </button>
             </div>
           )}
         </div>
       </div>
+
+      <CampusInboxModal
+        isOpen={showMailModal}
+        onClose={() => setShowMailModal(false)}
+      />
     </header>
   );
 };

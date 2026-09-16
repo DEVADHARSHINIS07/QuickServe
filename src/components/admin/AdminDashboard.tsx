@@ -199,7 +199,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setActiveView })
               {lowStockFoods.map(food => (
                 <div key={food.foodId} className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-2xl flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
-                    <img src={food.image} alt={food.name} className="w-8 h-8 rounded-lg object-cover" />
+                    <img
+                      src={food.image}
+                      alt={food.name}
+                      className="w-8 h-8 rounded-lg object-cover"
+                      loading="eager"
+                      decoding="async"
+                      referrerPolicy="no-referrer"
+                    />
                     <div>
                       <span className="font-bold text-slate-900 dark:text-white block">{food.name}</span>
                       <span className="text-[10px] text-rose-600 font-bold">Only {food.stock} remaining in kitchen</span>

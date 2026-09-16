@@ -6,7 +6,7 @@
 
 /**
  * QUICKSERVE SMART CANTEEN - REST API CLIENT
- * Connects React Frontend with Backend (Spring Boot Port 8080 / Express Port 3000 / Proxy)
+ * Connects React Frontend with Backend (Spring Boot Port 8080 / Express Port 5000 / Proxy)
  * Enforces AAACET Domain Verification (@aaacet.ac.in) and Token Storage.
  * Auto-detects and bypasses port conflicts (e.g., macOS AirPlay on port 5000 returning 403).
  */
@@ -20,25 +20,16 @@ export const getCandidateBaseUrls = (): string[] => {
     urls.push(resolvedApiBaseUrl);
   }
 
-  // 1. Relative path works with Vite proxy, dev server, and production
+  // 1. Relative path works with Vite proxy, Express dev server, and Cloud Run production
   urls.push('/api');
 
-  // 2. Custom environment variable if explicitly configured (ignore port 5000 if not confirmed working)
+  // 2. Custom environment variable if explicitly configured
   const envUrl = ((import.meta as any).env?.VITE_API_BASE_URL as string | undefined)?.trim();
   if (envUrl && !urls.includes(envUrl)) {
     const cleanEnv = envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
-    // If env points to port 5000 (common macOS AirPlay conflict), prioritize standard endpoints first
-    if (cleanEnv.includes(':5000')) {
+    if (!cleanEnv.includes(':5000')) {
       urls.push(cleanEnv);
-    } else {
-      urls.unshift(cleanEnv);
     }
-  }
-
-  // 3. Localhost fallback endpoints
-  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-    urls.push('http://localhost:8080/api'); // Spring Boot backend default
-    urls.push('http://localhost:3000/api'); // Node / Express backend default
   }
 
   return Array.from(new Set(urls));
@@ -128,7 +119,7 @@ async function apiRequest<T>(
         return {
           success: false,
           message: result.message || `Server returned status ${response.status}`,
-          isBackendAvailable: true,
+          isBackendAvailable: response.status !== 404,
         };
       }
 
@@ -143,7 +134,7 @@ async function apiRequest<T>(
       };
     } catch (error) {
       lastErrorMessage = error instanceof Error ? error.message : 'Network error';
-      // If there are other candidate URLs (e.g. trying port 8080 or 3000), try next
+      // If there are other candidate URLs (e.g. trying port 8080 or 5000), try next
       if (i < candidateBases.length - 1) {
         continue;
       }
@@ -151,7 +142,9 @@ async function apiRequest<T>(
   }
 
   // Fallback when backend is unreachable on all candidate endpoints
-  console.warn(`[QuickServe API] Endpoint ${endpoint} unreachable. Using Client State fallback.`);
+  if (endpoint !== '/auth/me' && endpoint !== '/auth/verify') {
+    console.info(`[QuickServe API] Endpoint ${endpoint} unreachable. Using Client State fallback.`);
+  }
   return {
     success: false,
     message: lastErrorMessage || 'Backend API unreachable. Ensure backend server is running.',
@@ -190,19 +183,92 @@ export const apiAdminRegister = async (data: {
 };
 
 export const apiVerifySession = async () => {
-  return apiRequest<{ user: any }>('/auth/me', 'GET', undefined, true);
+  const token = getAuthToken();
+  if (!token) {
+    return {
+      success: false,
+      message: 'No active session token',
+      isBackendAvailable: true,
+    };
+  }
+
+  // Verify expiration timestamp from JWT payload locally first
+  let tokenClaims: any = null;
+  try {
+    const parts = token.split('.');
+    if (parts.length === 3) {
+      tokenClaims = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+      const nowSec = Math.floor(Date.now() / 1000);
+      if (tokenClaims.exp && tokenClaims.exp < nowSec) {
+        clearAuthToken();
+        localStorage.removeItem('quickserve_user');
+        return {
+          success: false,
+          message: 'Token has expired. Please sign in again.',
+          isBackendAvailable: true,
+        };
+      }
+    }
+  } catch {
+    // Non-standard token structure, proceed to server
+  }
+
+  const res = await apiRequest<{ user: any }>('/auth/me', 'GET', undefined, true);
+
+  if (!res.success || (res as any).authenticated === false) {
+    // If backend reports expired or invalid session, clear token to avoid repeating failed attempts
+    clearAuthToken();
+    localStorage.removeItem('quickserve_user');
+  }
+
+  return res;
 };
 
 export const apiGetDemoAccounts = async () => {
   return apiRequest<any[]>('/auth/demo-accounts', 'GET', undefined, false);
 };
 
-export const apiForgotPassword = async (email: string) => {
-  return apiRequest<{ otp: string; token: string }>('/auth/forgot-password', 'POST', { email }, false);
+export const apiCheckOriginalEmail = async (email: string) => {
+  return apiRequest<{
+    isOriginal: boolean;
+    reason?: string;
+    cleanEmail: string;
+    studentRoll?: string;
+  }>('/auth/verify-email/check', 'POST', { email }, false);
 };
 
-export const apiResetPassword = async (tokenOrOtp: string, newPassword: string) => {
-  return apiRequest<void>('/auth/reset-password', 'POST', { token: tokenOrOtp, otp: tokenOrOtp, newPassword }, false);
+export const apiSendEmailVerificationCode = async (email: string, studentName?: string) => {
+  return apiRequest<{
+    code: string;
+    isOriginal: boolean;
+  }>('/auth/verify-email/send-code', 'POST', { email, studentName }, false);
+};
+
+export const apiVerifyEmailCode = async (email: string, code: string) => {
+  return apiRequest<void>('/auth/verify-email/verify-code', 'POST', { email, code }, false);
+};
+
+export const apiGetSentEmails = async (email?: string) => {
+  const url = email ? `/emails?email=${encodeURIComponent(email)}` : '/emails';
+  return apiRequest<any[]>(url, 'GET', undefined, false);
+};
+
+export const apiForgotPassword = async (email: string) => {
+  return apiRequest<{ otp?: string; token?: string; code?: string; email?: string }>(
+    '/auth/forgot-password',
+    'POST',
+    { email },
+    false
+  );
+};
+
+export const apiResetPassword = async (codeOrToken: string, newPassword: string, email?: string) => {
+  return apiRequest<void>(
+    '/auth/reset-password',
+    'POST',
+    { token: codeOrToken, otp: codeOrToken, code: codeOrToken, newPassword, email },
+    false
+  );
 };
 
 // 2. FOOD MENU REST APIS
@@ -271,3 +337,40 @@ export const apiMarkNotificationRead = async (notificationId: string) => {
 export const apiMarkAllNotificationsRead = async () => {
   return apiRequest<void>('/notifications/read-all', 'PUT', undefined, true);
 };
+
+// 6. PAYMENT REST APIS (Razorpay & UPI)
+export const apiCreatePaymentOrder = async (amount: number) => {
+  const queryParam = `?amount=${encodeURIComponent(amount)}`;
+  const res = await apiRequest<any>(`/payment/create-order${queryParam}`, 'POST', { amount }, false);
+  if (res.success && (res.data || (res as any).id)) {
+    return res;
+  }
+  // Graceful client fallback for sandbox & offline mode
+  const randomSuffix = (Math.random().toString(36).substring(2, 9) + Math.random().toString(36).substring(2, 9)).substring(0, 14);
+  const fallbackOrderId = `order_${randomSuffix}`;
+  return {
+    success: true,
+    message: 'Payment order initialized',
+    data: {
+      id: fallbackOrderId,
+      orderId: fallbackOrderId,
+      amount: Math.round(amount * 100),
+      currency: 'INR',
+      key: '',
+      isLiveGateway: false,
+      gatewayMode: 'canteen_upi',
+      canteenUpiId: 'canteen.aaacet@okaxis',
+    },
+    isBackendAvailable: res.isBackendAvailable,
+  };
+};
+
+export const apiVerifyPayment = async (data: {
+  razorpay_order_id?: string;
+  razorpay_payment_id?: string;
+  razorpay_signature?: string;
+  utrNumber?: string;
+}) => {
+  return apiRequest<any>('/payment/verify', 'POST', data, false);
+};
+
