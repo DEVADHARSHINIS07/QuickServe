@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, KeyRound, Lock, CheckCircle2, AlertCircle, Building2, ArrowLeft, Send, Inbox, ShieldCheck } from 'lucide-react';
-import { useCanteen } from '../../context/CanteenContext';
-import { ThemeToggle } from '../common/ThemeToggle';
-import { CampusInboxModal } from '../common/CampusInboxModal';
+import { useCanteen, CampusInboxModal } from '../../context/CanteenContext';
+import { ThemeToggle } from '../../context/ThemeContext';
 
 interface StudentForgotPasswordPageProps {
   onNavigate: (path: string) => void;

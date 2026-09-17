@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { User, Mail, Phone, Hash, Lock, CheckCircle2, AlertCircle, Building2, UserPlus, ShieldCheck, Send, KeyRound, Sparkles, Inbox } from 'lucide-react';
-import { useCanteen } from '../../context/CanteenContext';
-import { ThemeToggle } from '../common/ThemeToggle';
-import { CampusInboxModal } from '../common/CampusInboxModal';
+import { useCanteen, CampusInboxModal } from '../../context/CanteenContext';
+import { ThemeToggle } from '../../context/ThemeContext';
 
 interface StudentRegisterPageProps {
   onNavigate: (path: string) => void;
@@ -178,7 +177,7 @@ export const StudentRegisterPage: React.FC<StudentRegisterPageProps> = ({ onNavi
       });
       setTimeout(() => {
         onNavigate('/student/login');
-      }, 3000);
+      }, 5000);
     } else {
       setStatusMsg({ type: 'error', text: result.message || 'Registration failed. Email or Student ID may already exist.' });
     }

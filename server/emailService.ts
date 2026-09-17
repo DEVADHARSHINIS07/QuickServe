@@ -1,4 +1,3 @@
-import nodemailer, { type Transporter } from "nodemailer";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
@@ -60,18 +59,41 @@ const emailVerificationCodes = new Map<string, CodeRecord>();
 const passwordResetCodes = new Map<string, CodeRecord>();
 const verifiedEmails = new Set<string>();
 
-// Transporter configuration (supports SMTP if env is provided)
-let transporter: Transporter | null = null;
-if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-  transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || "587", 10),
-    secure: process.env.SMTP_SECURE === "true",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
+// Optional SMTP Transporter (dynamically loaded so missing nodemailer does not break local development)
+let cachedTransporter: any = null;
+let transporterInitialized = false;
+
+async function getSmtpTransporter(): Promise<any> {
+  if (transporterInitialized) {
+    return cachedTransporter;
+  }
+
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    try {
+      // Dynamic import ensures the app runs smoothly even before `npm install` is executed locally
+      const nodemailerModule = await import("nodemailer").catch(() => null);
+      if (nodemailerModule) {
+        const nm = (nodemailerModule as any).default || nodemailerModule;
+        cachedTransporter = nm.createTransport({
+          host: process.env.SMTP_HOST,
+          port: parseInt(process.env.SMTP_PORT || "587", 10),
+          secure: process.env.SMTP_SECURE === "true",
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          },
+        });
+        console.log("[QuickServe Email Engine] SMTP Transporter successfully initialized.");
+      } else {
+        console.info("[QuickServe Email Engine] 'nodemailer' not found in local node_modules. Emails will be delivered to the in-app Campus Mail Delivery Viewer.");
+      }
+    } catch (err: any) {
+      console.warn("[QuickServe Email Engine] Failed to initialize nodemailer:", err?.message || err);
+    }
+  }
+
+  transporterInitialized = true;
+  return cachedTransporter;
 }
 
 /**
@@ -185,9 +207,10 @@ export async function sendEmail(
   }
 
   // Send real email if SMTP is configured
-  if (transporter) {
+  const activeTransporter = await getSmtpTransporter();
+  if (activeTransporter) {
     try {
-      await transporter.sendMail({
+      await activeTransporter.sendMail({
         from: `"QuickServe Smart Canteen" <${process.env.SMTP_FROM || process.env.SMTP_USER || "canteen@aaacet.ac.in"}>`,
         to,
         subject,

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, KeyRound, Lock, CheckCircle2, AlertCircle, ShieldCheck, ArrowLeft, Send } from 'lucide-react';
 import { useCanteen } from '../../context/CanteenContext';
-import { ThemeToggle } from '../common/ThemeToggle';
+import { ThemeToggle } from '../../context/ThemeContext';
 
 interface AdminForgotPasswordPageProps {
   onNavigate: (path: string) => void;

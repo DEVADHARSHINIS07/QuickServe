@@ -137,7 +137,7 @@ export default defineConfig(() => {
       allowedHosts: true as const,
       proxy: {
         '/api': {
-          target: process.env.VITE_BACKEND_URL || 'http://localhost:3000',
+          target: process.env.VITE_BACKEND_URL || 'http://localhost:5000',
           changeOrigin: true,
           secure: false,
         },

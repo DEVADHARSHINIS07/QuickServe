@@ -860,7 +860,12 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
+    console.log(`\n==================================================`);
+    console.log(`🚀 QuickServe Portal is ready!`);
+    console.log(`👉 Open in your browser: http://localhost:${PORT}`);
+    console.log(`⚠️  Do NOT open http://localhost:3000 or port 5500.`);
+    console.log(`   Vite TSX compilation & API run strictly on port 5000.`);
+    console.log(`==================================================\n`);
   });
 }
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ShieldCheck, Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle2, ShieldAlert } from 'lucide-react';
 import { useCanteen } from '../../context/CanteenContext';
-import { ThemeToggle } from '../common/ThemeToggle';
+import { ThemeToggle } from '../../context/ThemeContext';
 
 interface AdminLoginPageProps {
   onNavigate: (path: string) => void;

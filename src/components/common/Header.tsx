@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { ShoppingBag, Bell, User, Utensils, Shield, LogOut, CheckCircle, Clock, AlertCircle, LogIn, ChevronDown, Mail } from 'lucide-react';
-import { useCanteen } from '../../context/CanteenContext';
-import { ThemeToggle } from './ThemeToggle';
-import { CampusInboxModal } from './CampusInboxModal';
+import { useCanteen, CampusInboxModal } from '../../context/CanteenContext';
+import { ThemeToggle } from '../../context/ThemeContext';
 
 interface HeaderProps {
   onOpenCart: () => void;

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Sun, Moon } from 'lucide-react';
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -67,3 +68,47 @@ export const useTheme = (): ThemeContextType => {
   }
   return context;
 };
+
+export interface ThemeToggleProps {
+  className?: string;
+  showLabel?: boolean;
+  size?: 'sm' | 'md';
+}
+
+export const ThemeToggle: React.FC<ThemeToggleProps> = ({
+  className = '',
+  showLabel = false,
+  size = 'md'
+}) => {
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
+
+  const iconSize = size === 'sm' ? 14 : 16;
+  const paddingClass = size === 'sm' ? 'p-1.5' : 'p-2 sm:p-2.5';
+
+  return (
+    <button
+      onClick={toggleTheme}
+      type="button"
+      className={`inline-flex items-center gap-1.5 rounded-full transition-colors border shadow-xs select-none ${paddingClass} ${
+        isDark
+          ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700 hover:text-white'
+          : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200 hover:text-slate-900'
+      } ${className}`}
+      title={isDark ? 'Switch to Lite theme' : 'Switch to Dark theme'}
+      aria-label={isDark ? 'Switch to Lite theme' : 'Switch to Dark theme'}
+    >
+      {isDark ? (
+        <Sun size={iconSize} className="text-slate-200 transition-transform hover:rotate-45" />
+      ) : (
+        <Moon size={iconSize} className="text-slate-700 transition-transform hover:-rotate-12" />
+      )}
+      {showLabel && (
+        <span className="text-xs font-semibold pr-1">
+          {isDark ? 'Lite' : 'Dark'}
+        </span>
+      )}
+    </button>
+  );
+};
+
