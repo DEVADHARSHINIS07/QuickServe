@@ -6,13 +6,27 @@ import { MobileNav } from './components/common/MobileNav';
 import { NotificationDrawer } from './components/common/NotificationDrawer';
 import { AuthModal } from './components/auth/AuthModal';
 
-import { StudentLoginPage } from './components/auth/StudentLoginPage';
-import { StudentRegisterPage } from './components/auth/StudentRegisterPage';
-import { StudentForgotPasswordPage } from './components/auth/StudentForgotPasswordPage';
+const StudentLoginPage = React.lazy(() =>
+  import('./components/auth/StudentLoginPage').then((m) => ({ default: m.StudentLoginPage }))
+);
+const StudentRegisterPage = React.lazy(() =>
+  import('./components/auth/StudentRegisterPage').then((m) => ({ default: m.StudentRegisterPage }))
+);
+const StudentForgotPasswordPage = React.lazy(() =>
+  import('./components/auth/StudentForgotPasswordPage').then((m) => ({ default: m.StudentForgotPasswordPage }))
+);
 
-import { AdminLoginPage } from './components/auth/AdminLoginPage';
-import { AdminRegisterPage } from './components/auth/AdminRegisterPage';
-import { AdminForgotPasswordPage } from './components/auth/AdminForgotPasswordPage';
+const AdminLoginPage = React.lazy(() =>
+  import('./components/auth/AdminLoginPage').then((m) => ({ default: m.AdminLoginPage }))
+);
+
+const AdminRegisterPage = React.lazy(() =>
+  import('./components/auth/AdminLoginPage').then((m) => ({ default: m.AdminRegisterPage }))
+);
+
+const AdminForgotPasswordPage = React.lazy(() =>
+  import('./components/auth/AdminForgotPasswordPage').then((m) => ({ default: m.AdminForgotPasswordPage }))
+);
 
 import { StudentDashboard } from './components/student/StudentDashboard';
 import { CartDrawer } from './components/student/CartDrawer';
@@ -173,32 +187,34 @@ const MainApp: React.FC = () => {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-8 sm:pb-12">
         {/* Dedicated Auth Pages */}
-        {currentPath === '/student/login' && (
-          <StudentLoginPage
-            onNavigate={navigateTo}
-            messageBanner={authBannerMsg || undefined}
-          />
-        )}
+        <React.Suspense fallback={<div className="py-12 text-center text-xs font-semibold text-slate-400">Loading auth view...</div>}>
+          {currentPath === '/student/login' && (
+            <StudentLoginPage
+              onNavigate={navigateTo}
+              messageBanner={authBannerMsg || undefined}
+            />
+          )}
 
-        {currentPath === '/student/register' && (
-          <StudentRegisterPage onNavigate={navigateTo} />
-        )}
+          {currentPath === '/student/register' && (
+            <StudentRegisterPage onNavigate={navigateTo} />
+          )}
 
-        {(currentPath === '/student/forgot-password' || currentPath === '/student/reset-password') && (
-          <StudentForgotPasswordPage onNavigate={navigateTo} />
-        )}
+          {(currentPath === '/student/forgot-password' || currentPath === '/student/reset-password') && (
+            <StudentForgotPasswordPage onNavigate={navigateTo} />
+          )}
 
-        {currentPath === '/admin/login' && (
-          <AdminLoginPage onNavigate={navigateTo} />
-        )}
+          {currentPath === '/admin/login' && (
+            <AdminLoginPage onNavigate={navigateTo} />
+          )}
 
-        {currentPath === '/admin/register' && (
-          <AdminRegisterPage onNavigate={navigateTo} />
-        )}
+          {currentPath === '/admin/register' && (
+            <AdminRegisterPage onNavigate={navigateTo} />
+          )}
 
-        {(currentPath === '/admin/forgot-password' || currentPath === '/admin/reset-password') && (
-          <AdminForgotPasswordPage onNavigate={navigateTo} />
-        )}
+          {(currentPath === '/admin/forgot-password' || currentPath === '/admin/reset-password') && (
+            <AdminForgotPasswordPage onNavigate={navigateTo} />
+          )}
+        </React.Suspense>
 
         {/* Student View Routes */}
         {currentPath === '/student/menu' && (
@@ -251,6 +267,7 @@ const MainApp: React.FC = () => {
               else if (view === 'admin_food') navigateTo('/admin/food');
               else if (view === 'admin_schedule') navigateTo('/admin/schedule');
               else if (view === 'admin_analytics') navigateTo('/admin/analytics');
+              else if (view === 'admin_register') navigateTo('/admin/register');
             }}
           />
         )}

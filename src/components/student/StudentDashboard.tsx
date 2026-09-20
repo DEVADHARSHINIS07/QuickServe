@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Sparkles, Utensils, Clock, ShoppingBag, ArrowRight, Heart, AlertCircle, CheckCircle, Flame } from 'lucide-react';
+import { Utensils, ArrowRight, AlertCircle } from 'lucide-react';
 import { useCanteen } from '../../context/CanteenContext';
 import { FoodCard } from './FoodCard';
 import { FoodSearchFilter } from './FoodSearchFilter';
-import { Category, VegType, FoodItem } from '../../types';
+import { Category, VegType } from '../../types';
 
 interface StudentDashboardProps {
   onOpenCart: () => void;
@@ -14,18 +14,12 @@ interface StudentDashboardProps {
 }
 
 export const StudentDashboard: React.FC<StudentDashboardProps> = ({
-  onOpenCart,
-  onOpenNotifications,
   onSelectOrder,
   setActiveView
 }) => {
   const {
-    currentUser,
-    isAuthenticated,
     foodItems,
-    orders,
     activeOrder,
-    favorites,
     isCanteenOpen,
     canteenConfig
   } = useCanteen();
@@ -36,8 +30,6 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   const [selectedVegFilter, setSelectedVegFilter] = useState<VegType | 'all'>('all');
   const [sortBy, setSortBy] = useState<'popular' | 'price_low' | 'price_high' | 'fastest_prep' | 'rating'>('popular');
   const [showAvailableOnly, setShowAvailableOnly] = useState(false);
-
-  const availableCount = foodItems.filter(f => f.isAvailable && f.stock > 0).length;
 
   // Filter food items
   const filteredFood = foodItems
@@ -70,94 +62,36 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
   return (
     <div className="space-y-6 pb-20 md:pb-10">
-      {/* Welcome Banner & Metrics Cards */}
-      <div className="space-y-3 sm:space-y-4">
-        {/* Top Minimal Metrics Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
-          <div className="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Active Menu</span>
-            <span className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">{availableCount} Items</span>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Order Status</span>
-            <span className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white truncate block">{activeOrder ? activeOrder.orderStatus : 'No Queue'}</span>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Favorites</span>
-            <span className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">{favorites.length} Dishes</span>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Canteen Hours</span>
-            <span className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">{canteenConfig.openingTime}</span>
+      {/* Canteen Closed Notice if applicable */}
+      {!isCanteenOpen && (
+        <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-2xl text-xs text-rose-700 dark:text-rose-300 font-medium flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <AlertCircle size={16} className="shrink-0 text-rose-600 dark:text-rose-400" />
+            <span>Canteen is currently closed ({canteenConfig.openingTime} – {canteenConfig.closingTime})</span>
           </div>
         </div>
+      )}
 
-        {/* Minimal Banner with Lite Minimal Palette */}
-        <div className="relative rounded-2xl sm:rounded-3xl p-4 sm:p-8 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
-          <div className="relative z-10 max-w-xl">
-            <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 sm:mb-3">
-              <Sparkles size={13} className="text-slate-500" /> QuickServe Canteen Portal
-            </div>
-
-            <h2 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
-              {isAuthenticated && currentUser?.name && currentUser.name !== 'Student Guest'
-                ? `Welcome back, ${currentUser.name} 👋`
-                : 'Welcome to QuickServe Canteen 👋'}
-            </h2>
-
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 sm:mt-1.5 font-medium leading-relaxed">
-              Skip campus lunch lines. Order ahead, schedule your slot, and pick up hot food seamlessly.
-            </p>
-
-            {/* Canteen Closed Notice */}
-            {!isCanteenOpen && (
-              <div className="mt-2.5 sm:mt-3 p-2.5 sm:p-3 bg-rose-50 border border-rose-100 rounded-xl sm:rounded-2xl text-xs text-rose-700 font-medium flex items-center gap-2">
-                <AlertCircle size={16} className="shrink-0 text-rose-600" />
-                <span>Canteen is closed right now ({canteenConfig.openingTime} - {canteenConfig.closingTime})</span>
-              </div>
-            )}
-          </div>
-
-          <button
-            onClick={() => {
-              const menuElem = document.getElementById('food-menu-section');
-              menuElem?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 shrink-0"
-          >
-            <Utensils size={15} /> Explore Full Menu
-          </button>
-        </div>
-      </div>
-
-      {/* ACTIVE ORDER STATUS WIDGET */}
+      {/* Active Order Status (Minimal) */}
       {activeOrder && (
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-5 bg-slate-900 text-white rounded-3xl shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+          className="p-4 bg-slate-900 text-white dark:bg-slate-800 rounded-2xl border border-slate-800 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs"
         >
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center font-extrabold text-xl shrink-0">
-              {activeOrder.queueNumber}
+            <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center font-bold text-base shrink-0">
+              #{activeOrder.queueNumber}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="bg-white/10 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                  Active Order #{activeOrder.orderId}
-                </span>
+                <span className="text-xs font-bold text-white">Order #{activeOrder.orderId}</span>
                 <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                   {activeOrder.orderStatus}
                 </span>
               </div>
-              <h4 className="text-base font-extrabold mt-1">
-                {activeOrder.items.map(i => `${i.name} (${i.quantity})`).join(', ')}
-              </h4>
               <p className="text-xs text-slate-300 mt-0.5">
-                Ready target: {activeOrder.requestedReadyTime} • Total: ₹{activeOrder.totalAmount}
+                Ready at {activeOrder.requestedReadyTime} • ₹{activeOrder.totalAmount}
               </p>
             </div>
           </div>
@@ -167,28 +101,22 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               onSelectOrder(activeOrder.orderId);
               setActiveView('tracking');
             }}
-            className="px-4 py-2 bg-white text-slate-900 font-bold text-xs rounded-xl shadow-xs hover:bg-slate-100 transition shrink-0 flex items-center gap-1.5"
+            className="px-3.5 py-1.5 bg-white text-slate-900 font-bold text-xs rounded-xl hover:bg-slate-100 transition shrink-0 flex items-center gap-1.5"
           >
-            <span>Track Order Status</span>
-            <ArrowRight size={14} />
+            <span>Track</span>
+            <ArrowRight size={13} />
           </button>
         </motion.div>
       )}
 
-      {/* SEARCH, FILTER & CATEGORIES */}
-      <div id="food-menu-section" className="space-y-4 pt-2">
+      {/* Menu Header & Search / Filters */}
+      <div id="food-menu-section" className="space-y-4">
         <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-              <Utensils className="text-slate-900 dark:text-white" size={20} /> Canteen Food Menu
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Filter by category, dietary preferences, or search items
-            </p>
-          </div>
-
-          <span className="text-xs text-slate-400 font-semibold">
-            Showing {filteredFood.length} items
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+            Menu
+          </h2>
+          <span className="text-xs text-slate-500 dark:text-slate-400">
+            {filteredFood.length} {filteredFood.length === 1 ? 'item' : 'items'}
           </span>
         </div>
 
@@ -208,10 +136,9 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
       {/* FOOD MENU GRID */}
       {filteredFood.length === 0 ? (
-        <div className="text-center py-16 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700">
-          <Utensils size={48} className="mx-auto mb-3 text-slate-300 dark:text-slate-600 stroke-1" />
-          <h4 className="font-bold text-slate-700 dark:text-slate-300 text-base">No food items found</h4>
-          <p className="text-xs text-slate-400 mt-1">Try resetting your search query or filters.</p>
+        <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+          <Utensils size={36} className="mx-auto mb-2 text-slate-300 dark:text-slate-600 stroke-1" />
+          <h4 className="font-bold text-slate-700 dark:text-slate-300 text-sm">No items found</h4>
           <button
             onClick={() => {
               setSearchQuery('');
@@ -219,13 +146,13 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               setSelectedVegFilter('all');
               setShowAvailableOnly(false);
             }}
-            className="mt-4 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition"
+            className="mt-3 px-3 py-1.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs rounded-xl transition"
           >
             Reset Filters
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredFood.map(item => (
             <FoodCard key={item.foodId} food={item} />
           ))}

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
 import { History, FileText, RefreshCw } from 'lucide-react';
 import { useCanteen } from '../../context/CanteenContext';
 import { Order } from '../../types';
@@ -28,33 +27,32 @@ export const OrderHistoryView: React.FC<OrderHistoryViewProps> = ({ onSelectOrde
 
   const handleReorder = (order: Order) => {
     reorderItems(order);
-    alert('Items added to cart! Proceeding to cart...');
     setActiveView('menu');
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-20 md:pb-10">
+    <div className="max-w-3xl mx-auto space-y-5 pb-12">
       {/* Title & Filter Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-            <History className="text-slate-900 dark:text-white" size={24} /> Order History & Receipts
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+            Order History
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            View all previous food orders, receipts, and easily reorder your favorite meals
+            {studentOrders.length} previous orders
           </p>
         </div>
 
         {/* Status Filter Pills */}
-        <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 p-1 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-semibold overflow-x-auto">
+        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs overflow-x-auto">
           {['All', 'Completed', 'Accepted', 'Rejected', 'Refunded'].map((status) => (
             <button
               key={status}
               onClick={() => setFilterStatus(status)}
-              className={`px-3 py-1.5 rounded-xl transition shrink-0 ${
+              className={`px-3 py-1 rounded-lg font-medium transition shrink-0 ${
                 filterStatus === status
-                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               {status}
@@ -65,44 +63,41 @@ export const OrderHistoryView: React.FC<OrderHistoryViewProps> = ({ onSelectOrde
 
       {/* Orders List */}
       {filteredOrders.length === 0 ? (
-        <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
-          <History size={48} className="mx-auto mb-3 text-slate-300 dark:text-slate-600 stroke-1" />
-          <h4 className="font-bold text-slate-700 dark:text-slate-300 text-base">No order records found</h4>
-          <p className="text-xs text-slate-400 mt-1">There are no orders matching the selected filter.</p>
+        <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <History size={40} className="mx-auto mb-2 text-slate-300 dark:text-slate-600 stroke-1" />
+          <h4 className="font-semibold text-slate-700 dark:text-slate-300 text-sm">No orders found</h4>
+          <p className="text-xs text-slate-400 mt-0.5">No orders match the selected filter.</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {filteredOrders.map((order) => (
-            <motion.div
+            <div
               key={order.orderId}
-              layout
-              className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs hover:border-slate-400 dark:hover:border-slate-700 transition space-y-4"
+              className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3"
             >
               {/* Order Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800 text-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-800 text-xs">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-xl">
+                  <span className="font-mono font-medium text-slate-900 dark:text-white">
                     #{order.orderId}
                   </span>
                   <span className="text-slate-400">• {order.createdAt}</span>
-                  <span className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">
                     Queue {order.queueNumber}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`font-bold px-2.5 py-0.5 rounded-full text-[11px] border ${
-                      order.orderStatus === 'Completed'
-                        ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 dark:border-white'
-                        : order.orderStatus === 'Rejected'
-                        ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-900'
-                        : 'bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700'
-                    }`}
-                  >
-                    {order.orderStatus}
-                  </span>
-                </div>
+                <span
+                  className={`font-medium px-2 py-0.5 rounded-full text-[11px] self-start sm:self-auto ${
+                    order.orderStatus === 'Completed'
+                      ? 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200'
+                      : order.orderStatus === 'Rejected'
+                      ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
+                      : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                  }`}
+                >
+                  {order.orderStatus}
+                </span>
               </div>
 
               {/* Items List */}
@@ -110,57 +105,57 @@ export const OrderHistoryView: React.FC<OrderHistoryViewProps> = ({ onSelectOrde
                 <div className="space-y-1 text-xs">
                   {order.items.map((item, idx) => (
                     <div key={idx} className="flex justify-between items-center text-slate-700 dark:text-slate-300">
-                      <span>{item.name} <strong className="text-slate-400">x{item.quantity}</strong></span>
-                      <span className="font-semibold">₹{item.price * item.quantity}</span>
+                      <span>{item.name} <span className="text-slate-400">×{item.quantity}</span></span>
+                      <span className="font-medium">₹{item.price * item.quantity}</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-2xl flex flex-col justify-between text-xs space-y-1 border border-slate-100 dark:border-slate-800">
-                  <div className="flex justify-between text-slate-500 dark:text-slate-400">
-                    <span>Payment Method</span>
-                    <span className="font-bold text-slate-800 dark:text-slate-200">{order.paymentMethod} ({order.paymentStatus})</span>
+                <div className="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl flex flex-col justify-between text-xs space-y-1">
+                  <div className="flex justify-between text-slate-500 dark:text-slate-400 text-[11px]">
+                    <span>Payment</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-300">{order.paymentMethod}</span>
                   </div>
-                  <div className="flex justify-between text-slate-500 dark:text-slate-400">
-                    <span>Ready Time Slot</span>
-                    <span className="font-bold text-slate-900 dark:text-white">{order.requestedReadyTime}</span>
+                  <div className="flex justify-between text-slate-500 dark:text-slate-400 text-[11px]">
+                    <span>Ready by</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-300">{order.requestedReadyTime}</span>
                   </div>
-                  <div className="flex justify-between font-black text-sm text-slate-900 dark:text-white pt-1 border-t border-slate-200 dark:border-slate-700">
-                    <span>Total Amount</span>
+                  <div className="flex justify-between font-bold text-slate-900 dark:text-white pt-1 border-t border-slate-200 dark:border-slate-700">
+                    <span>Total</span>
                     <span>₹{order.totalAmount}</span>
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-2 flex items-center justify-between gap-3">
+              <div className="pt-2 flex items-center justify-between gap-3 border-t border-slate-50 dark:border-slate-800/60">
                 <button
                   onClick={() => {
                     onSelectOrder(order.orderId);
                     setActiveView('tracking');
                   }}
-                  className="text-xs font-bold text-slate-800 dark:text-slate-200 hover:underline"
+                  className="text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
                 >
-                  Track Live Status →
+                  Track Status →
                 </button>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => setReceiptOrder(order)}
-                    className="px-3.5 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition flex items-center gap-1.5"
+                    className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium text-xs rounded-xl transition flex items-center gap-1"
                   >
-                    <FileText size={14} /> Receipt
+                    <FileText size={13} /> Receipt
                   </button>
 
                   <button
                     onClick={() => handleReorder(order)}
-                    className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5"
+                    className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-medium text-xs rounded-xl transition flex items-center gap-1"
                   >
-                    <RefreshCw size={14} /> Reorder
+                    <RefreshCw size={13} /> Reorder
                   </button>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       )}

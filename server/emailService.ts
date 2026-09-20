@@ -59,7 +59,7 @@ const emailVerificationCodes = new Map<string, CodeRecord>();
 const passwordResetCodes = new Map<string, CodeRecord>();
 const verifiedEmails = new Set<string>();
 
-// Optional SMTP Transporter (dynamically loaded so missing nodemailer does not break local development)
+// Gmail / SMTP Transporter
 let cachedTransporter: any = null;
 let transporterInitialized = false;
 
@@ -68,28 +68,42 @@ async function getSmtpTransporter(): Promise<any> {
     return cachedTransporter;
   }
 
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    try {
-      // Dynamic import ensures the app runs smoothly even before `npm install` is executed locally
-      const nodemailerModule = await import("nodemailer").catch(() => null);
-      if (nodemailerModule) {
-        const nm = (nodemailerModule as any).default || nodemailerModule;
+  try {
+    const nodemailerModule = await import("nodemailer").catch(() => null);
+    if (nodemailerModule) {
+      const nm = (nodemailerModule as any).default || nodemailerModule;
+
+      // 1. Direct Gmail Configuration (Google Workspace or personal Gmail)
+      const gmailUser = process.env.GMAIL_USER;
+      const gmailPass = process.env.GMAIL_APP_PASSWORD;
+
+      if (gmailUser && gmailPass) {
+        cachedTransporter = nm.createTransport({
+          service: "gmail",
+          auth: {
+            user: gmailUser,
+            pass: gmailPass,
+          },
+        });
+        console.log(`[QuickServe Email Engine] Gmail Transporter successfully initialized for ${gmailUser}`);
+      } else if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+        // 2. Custom SMTP host
         cachedTransporter = nm.createTransport({
           host: process.env.SMTP_HOST,
           port: parseInt(process.env.SMTP_PORT || "587", 10),
-          secure: process.env.SMTP_SECURE === "true",
+          secure: process.env.SMTP_SECURE === "true" || process.env.SMTP_PORT === "465",
           auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
           },
         });
-        console.log("[QuickServe Email Engine] SMTP Transporter successfully initialized.");
+        console.log(`[QuickServe Email Engine] SMTP Transporter initialized with host ${process.env.SMTP_HOST}`);
       } else {
-        console.info("[QuickServe Email Engine] 'nodemailer' not found in local node_modules. Emails will be delivered to the in-app Campus Mail Delivery Viewer.");
+        console.log("[QuickServe Email Engine] No SMTP/Gmail credentials configured in .env. Email dispatch simulated and logged to console.");
       }
-    } catch (err: any) {
-      console.warn("[QuickServe Email Engine] Failed to initialize nodemailer:", err?.message || err);
     }
+  } catch (err: any) {
+    console.warn("[QuickServe Email Engine] Failed to initialize email transporter:", err?.message || err);
   }
 
   transporterInitialized = true;
@@ -211,7 +225,7 @@ export async function sendEmail(
   if (activeTransporter) {
     try {
       await activeTransporter.sendMail({
-        from: `"QuickServe Smart Canteen" <${process.env.SMTP_FROM || process.env.SMTP_USER || "canteen@aaacet.ac.in"}>`,
+        from: `"QuickServe Smart Canteen" <${process.env.GMAIL_USER || process.env.SMTP_FROM || process.env.SMTP_USER || "canteen@aaacet.ac.in"}>`,
         to,
         subject,
         text,

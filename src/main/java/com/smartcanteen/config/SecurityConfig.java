@@ -82,6 +82,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // Public Endpoints
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/payment/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/foods/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/", "/index.html", "/static/**", "/assets/**", "/favicon.ico", "/error").permitAll()

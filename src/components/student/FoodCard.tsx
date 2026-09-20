@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { Heart, Plus, Clock, Star, AlertCircle, Info, Sparkles } from 'lucide-react';
+import React from 'react';
+import { Heart, Plus } from 'lucide-react';
 import { FoodItem } from '../../types';
 import { useCanteen } from '../../context/CanteenContext';
 
@@ -9,141 +8,95 @@ interface FoodCardProps {
   onOpenQuickView?: (food: FoodItem) => void;
 }
 
-export const FoodCard: React.FC<FoodCardProps> = ({ food, onOpenQuickView }) => {
+export const FoodCard: React.FC<FoodCardProps> = ({ food }) => {
   const { addToCart, favorites, toggleFavorite, checkFoodItemAvailableNow } = useCanteen();
-  const [isHovered, setIsHovered] = useState(false);
 
   const isFav = favorites.includes(food.foodId);
   const availability = checkFoodItemAvailableNow(food);
 
   return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.2 }}
-      className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden border border-slate-100 dark:border-slate-700/80 shadow-sm hover:shadow-xl hover:border-amber-200 dark:hover:border-slate-600 transition-all flex flex-col h-full group"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+    <div
+      className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col justify-between transition-colors"
     >
-      {/* Image Container with Badges */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
+      {/* Image Container */}
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
         <img
           src={food.image}
           alt={food.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading="eager"
+          className="w-full h-full object-cover"
+          loading="lazy"
           decoding="async"
           referrerPolicy="no-referrer"
         />
 
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
-
-        {/* Top Badges */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            {/* Veg / Non-Veg Indicator */}
-            <span className="p-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-lg shadow-sm">
-              <span
-                className={`block w-3 h-3 rounded-full border-2 ${
-                  food.vegType === 'veg'
-                    ? 'border-emerald-600 bg-emerald-500'
-                    : 'border-rose-600 bg-rose-500'
-                }`}
-              />
-            </span>
-
-            {/* Popular Rank Badge */}
-            {food.popularRank && food.popularRank <= 3 && (
-              <span className="bg-amber-500 text-slate-900 font-extrabold text-[10px] px-2 py-0.5 rounded-full shadow flex items-center gap-1">
-                <Sparkles size={11} /> Top #{food.popularRank}
-              </span>
-            )}
-          </div>
-
-          {/* Favorite Toggle */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleFavorite(food.foodId);
-            }}
-            className={`p-2 rounded-full backdrop-blur-md transition shadow ${
-              isFav
-                ? 'bg-rose-500 text-white'
-                : 'bg-white/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-500'
-            }`}
-            aria-label="Add to favorites"
-          >
-            <Heart size={16} fill={isFav ? 'currentColor' : 'none'} />
-          </button>
-        </div>
-
-        {/* Bottom Image Stats */}
-        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs font-semibold">
-          <span className="bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1">
-            <Clock size={12} className="text-amber-400" /> {food.preparationTimeMinutes} mins prep
+        {/* Veg / Non-Veg Indicator */}
+        <div className="absolute top-2.5 left-2.5">
+          <span className="p-1 bg-white/90 dark:bg-slate-900/90 rounded-md shadow-xs flex items-center justify-center">
+            <span
+              className={`block w-2.5 h-2.5 rounded-full ${
+                food.vegType === 'veg'
+                  ? 'bg-emerald-500'
+                  : 'bg-rose-500'
+              }`}
+            />
           </span>
-
-          {food.rating && (
-            <span className="bg-black/40 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1 text-amber-400">
-              <Star size={12} fill="currentColor" /> {food.rating}
-            </span>
-          )}
         </div>
+
+        {/* Favorite Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleFavorite(food.foodId);
+          }}
+          className={`absolute top-2.5 right-2.5 p-1.5 rounded-full transition shadow-xs ${
+            isFav
+              ? 'bg-rose-500 text-white'
+              : 'bg-white/90 dark:bg-slate-900/90 text-slate-500 hover:text-rose-500'
+          }`}
+          aria-label="Favorite"
+        >
+          <Heart size={14} fill={isFav ? 'currentColor' : 'none'} />
+        </button>
       </div>
 
       {/* Card Body */}
-      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+      <div className="p-3.5 flex-1 flex flex-col justify-between">
         <div>
-          <div className="flex items-center justify-between gap-2 mb-1">
-            <span className="text-[10px] font-bold tracking-wider uppercase text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/60 px-2.5 py-0.5 rounded-full border border-orange-200/50 dark:border-orange-800/50">
-              {food.category}
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-semibold text-slate-900 dark:text-white text-sm leading-snug line-clamp-1">
+              {food.name}
+            </h3>
+            <span className="text-xs text-slate-400 shrink-0">
+              {food.preparationTimeMinutes}m
             </span>
-
-            {/* Stock Level Warning */}
-            {food.stock > 0 && food.stock <= food.minimumStockAlert && (
-              <span className="text-[10px] font-extrabold text-orange-600 dark:text-orange-400 bg-orange-100/80 dark:bg-orange-900/40 px-2 py-0.5 rounded-full">
-                Only {food.stock} left!
-              </span>
-            )}
           </div>
 
-          <h3 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg leading-snug line-clamp-1">
-            {food.name}
-          </h3>
-
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
             {food.description}
           </p>
         </div>
 
-        {/* Availability Status & Add to Cart */}
-        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-3">
-          <div>
-            <span className="text-[10px] text-slate-400 uppercase font-semibold block">Price</span>
-            <span className="text-lg font-black text-slate-900 dark:text-white">
-              ₹{food.price}
-            </span>
-          </div>
+        {/* Footer: Price & Add */}
+        <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <span className="text-base font-bold text-slate-900 dark:text-white">
+            ₹{food.price}
+          </span>
 
           {!availability.available ? (
-            <div className="text-right">
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-3 py-1 rounded-full border border-rose-100 dark:border-rose-800">
-                <AlertCircle size={13} /> {food.stock === 0 ? 'Out of Stock' : 'Unavailable'}
-              </span>
-              {availability.reason && (
-                <span className="text-[10px] text-slate-400 block mt-0.5">{availability.reason}</span>
-              )}
-            </div>
+            <span className="text-[11px] text-rose-500 font-medium">
+              {food.stock === 0 ? 'Out of stock' : 'Unavailable'}
+            </span>
           ) : (
             <button
               onClick={() => addToCart(food, 1)}
-              className="px-4 py-2 bg-gradient-to-r from-orange-400 to-amber-500 hover:from-orange-500 hover:to-amber-600 text-white font-bold text-xs rounded-full shadow-sm hover:shadow-md transition-all flex items-center gap-1.5 active:scale-95"
+              className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-semibold text-xs rounded-xl transition flex items-center gap-1 active:scale-95"
             >
-              <Plus size={15} /> Add
+              <Plus size={13} />
+              <span>Add</span>
             </button>
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };

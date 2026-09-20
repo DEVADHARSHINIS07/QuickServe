@@ -1,87 +1,67 @@
 package com.smartcanteen.service;
 
-import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
-import com.smartcanteen.repository.OrderRepository;
+import com.razorpay.RazorpayException;
+import com.razorpay.Utils;
 import org.json.JSONObject;
+
+import com.smartcanteen.model.Order;
+import com.smartcanteen.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 public class PaymentService {
-
-    @Value("${razorpay.key.id}")
-    private String razorpayKeyId;
-
-    @Value("${razorpay.key.secret}")
-    private String razorpayKeySecret;
 
     @Autowired
     private OrderRepository orderRepository;
 
-    // ============================================================
-    // CREATE RAZORPAY ORDER
-    // ============================================================
+    @Value("${razorpay.key.id:rzp_test_AAACollegeCanteen}")
+    private String razorpayKeyId;
 
-    public String createOrder(int amount) throws Exception {
+    @Value("${razorpay.key.secret:secret_AAACollegeCanteen}")
+    private String razorpayKeySecret;
 
-        RazorpayClient razorpayClient =
-                new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+    public com.razorpay.Order createRazorpayOrder(Double amount, String receipt) throws RazorpayException {
+        RazorpayClient razorpay = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
 
         JSONObject orderRequest = new JSONObject();
-
-        // Amount is in rupees, Razorpay needs paise
-        orderRequest.put("amount", amount * 100);
+        // Convert to paise (e.g., Rs 100 -> 10000 paise)
+        long amountInPaise = Math.round(amount * 100);
+        orderRequest.put("amount", amountInPaise);
         orderRequest.put("currency", "INR");
-        orderRequest.put(
-                "receipt",
-                "receipt_" + System.currentTimeMillis()
-        );
+        orderRequest.put("receipt", receipt);
+        orderRequest.put("payment_capture", 1);
 
-        Order order = razorpayClient.orders.create(orderRequest);
-
-        return order.toString();
+        com.razorpay.Order order = razorpay.orders.create(orderRequest);
+        return order;
     }
 
-    // ============================================================
-    // VERIFY RAZORPAY PAYMENT
-    // ============================================================
+    public boolean verifyPaymentSignature(String razorpayOrderId, String razorpayPaymentId, String razorpaySignature) {
+        try {
+            JSONObject options = new JSONObject();
+            options.put("razorpay_order_id", razorpayOrderId);
+            options.put("razorpay_payment_id", razorpayPaymentId);
+            options.put("razorpay_signature", razorpaySignature);
 
-    public boolean verifyPayment(
-            String orderId,
-            String razorpayOrderId,
-            String razorpayPaymentId,
-            String razorpaySignature) throws Exception {
-
-        // Razorpay signature verification payload
-        String payload =
-                razorpayOrderId + "|" + razorpayPaymentId;
-
-        String generatedSignature =
-                com.razorpay.Utils.getHash(
-                        payload,
-                        razorpayKeySecret
-                );
-
-        boolean verified =
-                generatedSignature.equals(razorpaySignature);
-
-        // If Razorpay payment is genuine,
-        // update payment details in our database
-        if (verified) {
-
-            int updatedRows = orderRepository.updatePayment(
-                    orderId,
-                    "PAID",
-                    razorpayPaymentId,
-                    razorpayOrderId,
-                    razorpaySignature
-            );
-
-            return updatedRows > 0;
+            return Utils.verifyPaymentSignature(options, razorpayKeySecret);
+        } catch (Exception e) {
+            return false;
         }
+    }
 
-        return false;
+    public boolean processPaymentVerification(String orderId, String razorpayPaymentId, String razorpayOrderId, String razorpaySignature) {
+        boolean isValid = verifyPaymentSignature(razorpayOrderId, razorpayPaymentId, razorpaySignature);
+        if (isValid) {
+            orderRepository.updatePayment(orderId, "PAID", razorpayPaymentId, "UPI", "Order Accepted");
+            return true;
+        } else {
+            orderRepository.updatePayment(orderId, "FAILED", razorpayPaymentId, "UPI", "Order Placed");
+            return false;
+        }
     }
 }

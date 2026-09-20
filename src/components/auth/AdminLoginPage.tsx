@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { ShieldCheck, Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { ShieldCheck, Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle2, User, Phone } from 'lucide-react';
 import { useCanteen } from '../../context/CanteenContext';
-import { ThemeToggle } from '../../context/ThemeContext';
 
 interface AdminLoginPageProps {
   onNavigate: (path: string) => void;
@@ -63,171 +61,321 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onNavigate, mess
   };
 
   return (
-    <div className="max-w-md mx-auto py-8 px-4">
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-slate-900 rounded-3xl shadow-xs overflow-hidden border border-slate-200 dark:border-slate-800"
-      >
-        {/* Minimal Header */}
-        <div className="bg-slate-900 dark:bg-slate-800/90 p-6 text-white text-center relative border-b border-slate-800">
-          <div className="absolute right-4 top-4">
-            <ThemeToggle size="sm" />
-          </div>
-          <span className="bg-slate-800 dark:bg-slate-700/80 text-slate-200 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1 border border-slate-700">
-            <ShieldCheck size={13} /> Staff & Admin Portal
-          </span>
-          <h2 className="text-xl sm:text-2xl font-black mt-2 text-white tracking-tight">Canteen Admin Sign In</h2>
-          <p className="text-xs text-slate-400 mt-1 font-medium">
-            Authorized Canteen Managers & Staff Only
+    <div className="max-w-md mx-auto py-10 px-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 space-y-6">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Admin Sign In</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Canteen staff portal • aaacet.ac.in
           </p>
         </div>
 
-        <div className="p-6 space-y-5">
-          <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-2xl flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300">
-            <ShieldAlert size={20} className="shrink-0 text-slate-900 dark:text-slate-100" />
-            <div>
-              <span className="font-bold block text-slate-900 dark:text-white">Staff Security Clearance Required</span>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                Requires authorized <strong>@aaacet.ac.in</strong> staff credentials.
-              </span>
+        {/* Quick Credentials helper */}
+        <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl flex items-center justify-between gap-2 text-xs">
+          <div className="text-[11px] text-slate-600 dark:text-slate-400">
+            <span className="font-mono font-medium text-slate-900 dark:text-white">admin@aaacet.ac.in</span>
+            <span className="mx-1.5">•</span>
+            <span className="font-mono text-slate-500">Admin@123</span>
+          </div>
+          <button
+            type="button"
+            onClick={fillValidAdminCredentials}
+            className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-[11px] font-medium rounded-lg transition shrink-0"
+          >
+            Auto-fill
+          </button>
+        </div>
+
+        {statusMsg && (
+          <div
+            className={`p-3 rounded-xl text-xs font-medium flex items-start gap-2 ${
+              statusMsg.type === 'success'
+                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
+                : 'bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800'
+            }`}
+          >
+            {statusMsg.type === 'success' ? (
+              <CheckCircle2 size={16} className="shrink-0 mt-0.5 text-emerald-600" />
+            ) : (
+              <AlertCircle size={16} className="shrink-0 mt-0.5 text-rose-600" />
+            )}
+            <span className="leading-relaxed">{statusMsg.text}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-xs font-medium text-slate-700 dark:text-slate-300 block mb-1">
+              Admin Email
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3.5 top-2.5 text-slate-400" size={16} />
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="admin@aaacet.ac.in"
+                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-slate-500"
+              />
             </div>
           </div>
 
-          {/* Quick Real Test Credentials Pill */}
-          <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-2xl">
-            <div className="flex items-center justify-between text-[11px] mb-2">
-              <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                <span>Verified Admin Credentials</span>
-              </span>
-              <span className="text-[10px] font-semibold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-md font-mono">
-                Admin Clearance
-              </span>
-            </div>
-            <div className="text-[11px] text-slate-600 dark:text-slate-400 font-mono mb-2.5">
-              <span>Email: </span><strong className="text-slate-900 dark:text-white">admin@aaacet.ac.in</strong>
-              <span className="mx-2">•</span>
-              <span>Pass: </span><strong className="text-slate-900 dark:text-white">Admin@123</strong>
-            </div>
-            <div className="flex gap-2">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300 block">
+                Password
+              </label>
               <button
                 type="button"
-                onClick={fillValidAdminCredentials}
-                className="flex-1 py-1.5 px-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-[11px] font-bold rounded-xl transition text-center shadow-xs"
+                onClick={() => onNavigate('/admin/forgot-password')}
+                className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white"
               >
-                Fill Admin Credentials
+                Forgot password?
               </button>
+            </div>
+            <div className="relative">
+              <Lock className="absolute left-3.5 top-2.5 text-slate-400" size={16} />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full pl-10 pr-10 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-slate-500"
+              />
               <button
                 type="button"
-                onClick={fillInvalidAdminPassword}
-                className="py-1.5 px-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-medium rounded-xl transition"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
-                Test Wrong Password
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </div>
 
-          {statusMsg && (
-            <div
-              className={`p-3.5 rounded-2xl text-xs font-semibold flex items-start gap-2.5 ${
-                statusMsg.type === 'success'
-                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
-                  : 'bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800'
-              }`}
-            >
-              {statusMsg.type === 'success' ? (
-                <CheckCircle2 size={18} className="shrink-0 mt-0.5 text-emerald-600" />
-              ) : (
-                <AlertCircle size={18} className="shrink-0 mt-0.5 text-rose-600" />
-              )}
-              <span className="leading-relaxed">{statusMsg.text}</span>
-            </div>
-          )}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-semibold text-xs rounded-xl transition flex items-center justify-center gap-1.5"
+          >
+            <ShieldCheck size={15} />
+            <span>{isSubmitting ? 'Authenticating...' : 'Sign In as Admin'}</span>
+          </button>
+        </form>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
+          Need a new staff account?{' '}
+          <button
+            onClick={() => onNavigate('/admin/register')}
+            className="text-slate-900 dark:text-white font-semibold hover:underline"
+          >
+            Create account
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const AdminRegisterPage: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {
+  const { registerAdmin } = useCanteen();
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatusMsg(null);
+
+    if (!name || !email || !mobile || !password || !confirmPassword) {
+      setStatusMsg({ type: 'error', text: 'Please fill in all mandatory fields.' });
+      return;
+    }
+
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail.endsWith('@aaacet.ac.in')) {
+      setStatusMsg({
+        type: 'error',
+        text: 'Admin registration requires an official AAACET staff email ending with @aaacet.ac.in.'
+      });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setStatusMsg({ type: 'error', text: 'Passwords do not match.' });
+      return;
+    }
+
+    if (password.length < 6) {
+      setStatusMsg({ type: 'error', text: 'Password must be at least 6 characters.' });
+      return;
+    }
+
+    setIsSubmitting(true);
+    const result = await registerAdmin({
+      name,
+      email: trimmedEmail,
+      mobile,
+      password
+    });
+    setIsSubmitting(false);
+
+    if (result.success) {
+      setStatusMsg({
+        type: 'success',
+        text: `Admin account registered for ${trimmedEmail}! You can now sign in.`
+      });
+      setTimeout(() => {
+        onNavigate('/admin/login');
+      }, 1500);
+    } else {
+      setStatusMsg({ type: 'error', text: result.message || 'Registration failed.' });
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto py-10 px-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 space-y-6">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create Admin Account</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Staff registration • aaacet.ac.in
+          </p>
+        </div>
+
+        {statusMsg && (
+          <div
+            className={`p-3 rounded-xl text-xs font-medium flex items-start gap-2 ${
+              statusMsg.type === 'success'
+                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
+                : 'bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800'
+            }`}
+          >
+            {statusMsg.type === 'success' ? (
+              <CheckCircle2 size={16} className="shrink-0 mt-0.5 text-emerald-600" />
+            ) : (
+              <AlertCircle size={16} className="shrink-0 mt-0.5 text-rose-600" />
+            )}
+            <span className="leading-relaxed">{statusMsg.text}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-xs font-medium text-slate-700 dark:text-slate-300 block mb-1">
+              Full Name
+            </label>
+            <div className="relative">
+              <User className="absolute left-3.5 top-2.5 text-slate-400" size={16} />
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="Full Name"
+                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-slate-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
-                  Staff Admin College Email
-                </label>
-                <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
-                  @aaacet.ac.in
-                </span>
-              </div>
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300 block mb-1">
+                Staff Mobile
+              </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-3 text-slate-400" size={18} />
+                <Phone className="absolute left-3.5 top-2.5 text-slate-400" size={16} />
+                <input
+                  type="tel"
+                  required
+                  value={mobile}
+                  onChange={e => setMobile(e.target.value)}
+                  placeholder="Mobile"
+                  className="w-full pl-10 pr-3 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-slate-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300 block mb-1">
+                Staff Email
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-2.5 text-slate-400" size={16} />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  placeholder="admin@aaacet.ac.in"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
+                  placeholder="staff@aaacet.ac.in"
+                  className="w-full pl-10 pr-3 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-slate-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300 block mb-1">
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-2.5 text-slate-400" size={16} />
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="Min 6 chars"
+                  className="w-full pl-10 pr-3 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-slate-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                Admin Password
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300 block mb-1">
+                Confirm Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-3 text-slate-400" size={18} />
+                <Lock className="absolute left-3.5 top-2.5 text-slate-400" size={16} />
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type="password"
                   required
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm password"
+                  className="w-full pl-10 pr-3 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-slate-500"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
               </div>
             </div>
-
-            <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
-              <button
-                type="button"
-                onClick={() => onNavigate('/admin/forgot-password')}
-                className="text-slate-900 dark:text-white hover:underline font-bold ml-auto"
-              >
-                Forgot Password?
-              </button>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-extrabold text-sm rounded-2xl shadow-xs transition flex items-center justify-center gap-2"
-            >
-              {isSubmitting ? (
-                <span>Authenticating...</span>
-              ) : (
-                <>
-                  <ShieldCheck size={18} />
-                  <span>Access Admin Dashboard</span>
-                </>
-              )}
-            </button>
-          </form>
-
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
-            Need to register a new admin account?{' '}
-            <button
-              onClick={() => onNavigate('/admin/register')}
-              className="text-slate-900 dark:text-white hover:underline font-extrabold ml-1"
-            >
-              Register Admin Staff
-            </button>
           </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full py-2.5 mt-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-semibold text-xs rounded-xl transition flex items-center justify-center gap-1.5"
+          >
+            {isSubmitting ? 'Registering...' : 'Register Admin Account'}
+          </button>
+        </form>
+
+        <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
+          Already have an admin account?{' '}
+          <button
+            onClick={() => onNavigate('/admin/login')}
+            className="text-slate-900 dark:text-white font-semibold hover:underline"
+          >
+            Sign In
+          </button>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };

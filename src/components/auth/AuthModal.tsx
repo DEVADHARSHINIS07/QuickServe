@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Eye, EyeOff, User, Lock, Mail, Phone, Hash, ShieldCheck, CheckCircle2, AlertCircle, Building2 } from 'lucide-react';
+import { X, Eye, EyeOff, User, Lock, Mail, Phone, Hash, ShieldCheck, CheckCircle2, AlertCircle, Building2, UserPlus } from 'lucide-react';
 import { useCanteen } from '../../context/CanteenContext';
 import { User as UserType } from '../../types';
 
@@ -13,7 +13,7 @@ interface AuthModalProps {
 const COLLEGE_DOMAIN = 'aaacet.ac.in';
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTab = 'login' }) => {
-  const { loginUser } = useCanteen();
+  const { loginUser, registerAdmin } = useCanteen();
   const [activeTab, setActiveTab] = useState<'login' | 'register' | 'admin'>(initialTab);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -31,8 +31,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
   const [regConfirmPass, setRegConfirmPass] = useState('');
 
   // Admin state
+  const [adminMode, setAdminMode] = useState<'login' | 'register'>('login');
   const [adminUser, setAdminUser] = useState('admin@aaacet.ac.in');
   const [adminPass, setAdminPass] = useState('admin123');
+
+  // Admin Register state
+  const [adminRegName, setAdminRegName] = useState('');
+  const [adminRegEmail, setAdminRegEmail] = useState('');
+  const [adminRegMobile, setAdminRegMobile] = useState('');
+  const [adminRegPass, setAdminRegPass] = useState('');
+  const [adminRegConfirmPass, setAdminRegConfirmPass] = useState('');
 
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -153,6 +161,55 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
       setMessage(null);
       onClose();
     }, 1000);
+  };
+
+  const handleAdminRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminRegName || !adminRegEmail || !adminRegMobile || !adminRegPass || !adminRegConfirmPass) {
+      setMessage({ type: 'error', text: 'Please fill in all mandatory fields.' });
+      return;
+    }
+
+    const trimmedEmail = adminRegEmail.trim().toLowerCase();
+    if (!trimmedEmail.endsWith(`@${COLLEGE_DOMAIN}`)) {
+      setMessage({
+        type: 'error',
+        text: `Access Denied: Admin registration requires an official AAACET staff email ending with @${COLLEGE_DOMAIN}.`
+      });
+      return;
+    }
+
+    if (adminRegPass !== adminRegConfirmPass) {
+      setMessage({ type: 'error', text: 'Passwords do not match!' });
+      return;
+    }
+
+    if (adminRegPass.length < 6) {
+      setMessage({ type: 'error', text: 'Password must be at least 6 characters long.' });
+      return;
+    }
+
+    const result = await registerAdmin({
+      name: adminRegName,
+      email: trimmedEmail,
+      mobile: adminRegMobile,
+      password: adminRegPass
+    });
+
+    if (result.success) {
+      setMessage({
+        type: 'success',
+        text: `Admin account registered for ${trimmedEmail}! You can now sign in.`
+      });
+      setAdminUser(trimmedEmail);
+      setAdminPass(adminRegPass);
+      setTimeout(() => {
+        setAdminMode('login');
+        setMessage(null);
+      }, 1500);
+    } else {
+      setMessage({ type: 'error', text: result.message || 'Admin registration failed.' });
+    }
   };
 
   const handleForgotPassword = () => {
@@ -426,60 +483,180 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialTa
               </form>
             )}
 
-            {/* ADMIN LOGIN FORM */}
+            {/* ADMIN LOGIN & REGISTER FORMS */}
             {activeTab === 'admin' && (
-              <form onSubmit={handleAdminLogin} className="space-y-4">
+              <div className="space-y-4">
+                {/* Admin Sub-Tabs */}
+                <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl text-xs font-bold border border-slate-200 dark:border-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => { setAdminMode('login'); setMessage(null); }}
+                    className={`flex-1 py-2 rounded-xl transition flex items-center justify-center gap-1.5 ${
+                      adminMode === 'login'
+                        ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                        : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                    }`}
+                  >
+                    <ShieldCheck size={14} />
+                    <span>Admin Sign In</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setAdminMode('register'); setMessage(null); }}
+                    className={`flex-1 py-2 rounded-xl transition flex items-center justify-center gap-1.5 ${
+                      adminMode === 'register'
+                        ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                        : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                    }`}
+                  >
+                    <UserPlus size={14} />
+                    <span>Create Admin Account</span>
+                  </button>
+                </div>
+
                 <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
                   <ShieldCheck size={20} className="shrink-0 text-slate-500" />
-                  <span>Authorized canteen staff only. Access requiring @aaacet.ac.in credentials.</span>
+                  <span>Authorized canteen staff only. Requires @aaacet.ac.in credentials.</span>
                 </div>
 
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    Staff College Email ID
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-3 text-slate-400" size={18} />
-                    <input
-                      type="email"
-                      value={adminUser}
-                      onChange={e => setAdminUser(e.target.value)}
-                      placeholder="admin@aaacet.ac.in"
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
-                    />
-                  </div>
-                </div>
+                {adminMode === 'login' ? (
+                  <form onSubmit={handleAdminLogin} className="space-y-4">
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                        Staff College Email ID
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3.5 top-3 text-slate-400" size={18} />
+                        <input
+                          type="email"
+                          value={adminUser}
+                          onChange={e => setAdminUser(e.target.value)}
+                          placeholder="admin@aaacet.ac.in"
+                          className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
+                        />
+                      </div>
+                    </div>
 
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    Admin Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-3 text-slate-400" size={18} />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={adminPass}
-                      onChange={e => setAdminPass(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
-                    />
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                        Admin Password
+                      </label>
+                      <div className="relative">
+                        <Lock className="absolute left-3.5 top-3 text-slate-400" size={18} />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={adminPass}
+                          onChange={e => setAdminPass(e.target.value)}
+                          placeholder="••••••••"
+                          className="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </div>
+
                     <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                      type="submit"
+                      className="w-full py-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-sm rounded-2xl transition shadow-xs"
                     >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      Access Staff Portal
                     </button>
-                  </div>
-                </div>
+                  </form>
+                ) : (
+                  <form onSubmit={handleAdminRegister} className="space-y-3">
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                        Staff Full Name
+                      </label>
+                      <div className="relative">
+                        <User className="absolute left-3.5 top-2.5 text-slate-400" size={16} />
+                        <input
+                          type="text"
+                          required
+                          value={adminRegName}
+                          onChange={e => setAdminRegName(e.target.value)}
+                          placeholder="e.g. Canteen Manager"
+                          className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
+                        />
+                      </div>
+                    </div>
 
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-sm rounded-2xl transition shadow-xs"
-                >
-                  Access Staff Portal
-                </button>
-              </form>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                          Staff Mobile
+                        </label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-2.5 text-slate-400" size={15} />
+                          <input
+                            type="tel"
+                            required
+                            value={adminRegMobile}
+                            onChange={e => setAdminRegMobile(e.target.value)}
+                            placeholder="9876543210"
+                            className="w-full pl-9 pr-2 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                          Staff Email
+                        </label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-2.5 text-slate-400" size={15} />
+                          <input
+                            type="email"
+                            required
+                            value={adminRegEmail}
+                            onChange={e => setAdminRegEmail(e.target.value)}
+                            placeholder="staff@aaacet.ac.in"
+                            className="w-full pl-9 pr-2 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Password</label>
+                        <input
+                          type="password"
+                          required
+                          value={adminRegPass}
+                          onChange={e => setAdminRegPass(e.target.value)}
+                          placeholder="••••••••"
+                          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Confirm</label>
+                        <input
+                          type="password"
+                          required
+                          value={adminRegConfirmPass}
+                          onChange={e => setAdminRegConfirmPass(e.target.value)}
+                          placeholder="••••••••"
+                          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-2.5 mt-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5"
+                    >
+                      <UserPlus size={15} />
+                      <span>Create Staff Admin Account</span>
+                    </button>
+                  </form>
+                )}
+              </div>
             )}
           </div>
         </motion.div>

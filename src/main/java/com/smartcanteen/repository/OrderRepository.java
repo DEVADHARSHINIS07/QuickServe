@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,7 +19,6 @@ public class OrderRepository {
 
     private final RowMapper<Order> orderRowMapper = (rs, rowNum) -> {
         Order order = new Order();
-
         order.setId(rs.getLong("id"));
         order.setOrderId(rs.getString("order_id"));
         order.setUserId(rs.getLong("user_id"));
@@ -27,15 +27,9 @@ public class OrderRepository {
         order.setStudentMobile(rs.getString("student_mobile"));
         order.setSubtotal(rs.getBigDecimal("subtotal"));
         order.setTotalAmount(rs.getBigDecimal("total_amount"));
-
         order.setPaymentMethod(rs.getString("payment_method"));
         order.setPaymentStatus(rs.getString("payment_status"));
         order.setTransactionId(rs.getString("transaction_id"));
-
-        // Razorpay payment details
-        order.setRazorpayOrderId(rs.getString("razorpay_order_id"));
-        order.setRazorpaySignature(rs.getString("razorpay_signature"));
-
         order.setRequestedReadyDate(rs.getString("requested_ready_date"));
         order.setRequestedReadyTime(rs.getString("requested_ready_time"));
         order.setPriority(rs.getString("priority"));
@@ -52,7 +46,6 @@ public class OrderRepository {
         order.setCompletedAt(rs.getTimestamp("completed_at"));
         order.setCancelledAt(rs.getTimestamp("cancelled_at"));
         order.setUpdatedAt(rs.getTimestamp("updated_at"));
-
         return order;
     };
 
@@ -63,15 +56,8 @@ public class OrderRepository {
     }
 
     public List<Order> findByStudentId(String studentId) {
-        String sql = "SELECT * FROM orders " +
-                     "WHERE UPPER(student_id) = UPPER(?) " +
-                     "ORDER BY created_at DESC";
-
-        return jdbcTemplate.query(
-                sql,
-                orderRowMapper,
-                studentId.trim()
-        );
+        String sql = "SELECT * FROM orders WHERE UPPER(student_id) = UPPER(?) ORDER BY created_at DESC";
+        return jdbcTemplate.query(sql, orderRowMapper, studentId.trim());
     }
 
     public List<Order> findAllOrders() {
@@ -80,24 +66,15 @@ public class OrderRepository {
     }
 
     public List<Order> findTodayOrders() {
-        String sql = "SELECT * FROM orders " +
-                     "WHERE DATE(created_at) = CURRENT_DATE() " +
-                     "ORDER BY created_at DESC";
-
+        String sql = "SELECT * FROM orders WHERE DATE(created_at) = CURRENT_DATE() ORDER BY created_at DESC";
         return jdbcTemplate.query(sql, orderRowMapper);
     }
 
     public int save(Order order) {
-
-        String sql = "INSERT INTO orders (" +
-                "order_id, user_id, student_id, student_name, student_mobile, " +
-                "subtotal, total_amount, payment_method, payment_status, transaction_id, " +
-                "requested_ready_date, requested_ready_time, priority, " +
-                "order_status, queue_number" +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        return jdbcTemplate.update(
-                sql,
+        String sql = "INSERT INTO orders (order_id, user_id, student_id, student_name, student_mobile, subtotal, total_amount, " +
+                     "payment_method, payment_status, transaction_id, requested_ready_date, requested_ready_time, priority, " +
+                     "order_status, queue_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        return jdbcTemplate.update(sql,
                 order.getOrderId(),
                 order.getUserId(),
                 order.getStudentId(),
@@ -116,165 +93,55 @@ public class OrderRepository {
         );
     }
 
-    public int updateStatus(
-            String orderId,
-            String newStatus,
-            String timestampColumn,
-            String rejectionReason) {
-
-        String sql = "UPDATE orders SET " +
-                     "order_status = ?, " +
-                     "updated_at = CURRENT_TIMESTAMP";
-
+    public int updateStatus(String orderId, String newStatus, String timestampColumn, String rejectionReason) {
+        String sql = "UPDATE orders SET order_status = ?, updated_at = CURRENT_TIMESTAMP";
         if (timestampColumn != null) {
             sql += ", " + timestampColumn + " = CURRENT_TIMESTAMP";
         }
-
         if (rejectionReason != null) {
             sql += ", rejection_reason = ?";
             sql += " WHERE order_id = ?";
-
-            return jdbcTemplate.update(
-                    sql,
-                    newStatus,
-                    rejectionReason,
-                    orderId
-            );
-
+            return jdbcTemplate.update(sql, newStatus, rejectionReason, orderId);
         } else {
             sql += " WHERE order_id = ?";
-
-            return jdbcTemplate.update(
-                    sql,
-                    newStatus,
-                    orderId
-            );
+            return jdbcTemplate.update(sql, newStatus, orderId);
         }
     }
 
-    public int updateRefund(
-            String orderId,
-            String refundStatus,
-            BigDecimal amount,
-            String refundTxId) {
-
-        String sql = "UPDATE orders SET " +
-                "refund_status = ?, " +
-                "refund_amount = ?, " +
-                "refund_transaction_id = ?, " +
-                "payment_status = 'REFUNDED', " +
-                "updated_at = CURRENT_TIMESTAMP " +
-                "WHERE order_id = ?";
-
-        return jdbcTemplate.update(
-                sql,
-                refundStatus,
-                amount,
-                refundTxId,
-                orderId
-        );
+    public int updateRefund(String orderId, String refundStatus, BigDecimal amount, String refundTxId) {
+        String sql = "UPDATE orders SET refund_status = ?, refund_amount = ?, refund_transaction_id = ?, payment_status = 'REFUNDED', updated_at = CURRENT_TIMESTAMP WHERE order_id = ?";
+        return jdbcTemplate.update(sql, refundStatus, amount, refundTxId, orderId);
     }
 
-    // ============================================================
-    // RAZORPAY PAYMENT UPDATE
-    // ============================================================
-
-    public int updatePayment(
-            String orderId,
-            String paymentStatus,
-            String transactionId,
-            String razorpayOrderId,
-            String razorpaySignature) {
-
-        String sql = "UPDATE orders SET " +
-                "payment_status = ?, " +
-                "transaction_id = ?, " +
-                "razorpay_order_id = ?, " +
-                "razorpay_signature = ?, " +
-                "updated_at = CURRENT_TIMESTAMP " +
-                "WHERE order_id = ?";
-
-        return jdbcTemplate.update(
-                sql,
-                paymentStatus,
-                transactionId,
-                razorpayOrderId,
-                razorpaySignature,
-                orderId
-        );
+    public int updatePayment(String orderId, String paymentStatus, String transactionId, String paymentMethod, String orderStatus) {
+        String sql = "UPDATE orders SET payment_status = ?, transaction_id = ?, payment_method = ?, order_status = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ?";
+        return jdbcTemplate.update(sql, paymentStatus, transactionId, paymentMethod, orderStatus, orderId);
     }
 
     public BigDecimal getTodayTotalRevenue() {
-
-        String sql = "SELECT COALESCE(SUM(total_amount), 0) " +
-                "FROM orders " +
-                "WHERE DATE(created_at) = CURRENT_DATE() " +
-                "AND order_status != 'Rejected' " +
-                "AND order_status != 'Cancelled'";
-
-        return jdbcTemplate.queryForObject(
-                sql,
-                BigDecimal.class
-        );
+        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE DATE(created_at) = CURRENT_DATE() AND order_status != 'Rejected' AND order_status != 'Cancelled'";
+        return jdbcTemplate.queryForObject(sql, BigDecimal.class);
     }
 
     public BigDecimal getTodayUpiRevenue() {
-
-        String sql = "SELECT COALESCE(SUM(total_amount), 0) " +
-                "FROM orders " +
-                "WHERE DATE(created_at) = CURRENT_DATE() " +
-                "AND payment_method = 'UPI' " +
-                "AND order_status != 'Rejected' " +
-                "AND order_status != 'Cancelled'";
-
-        return jdbcTemplate.queryForObject(
-                sql,
-                BigDecimal.class
-        );
+        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE DATE(created_at) = CURRENT_DATE() AND payment_method = 'UPI' AND order_status != 'Rejected' AND order_status != 'Cancelled'";
+        return jdbcTemplate.queryForObject(sql, BigDecimal.class);
     }
 
     public BigDecimal getTodayCashRevenue() {
-
-        String sql = "SELECT COALESCE(SUM(total_amount), 0) " +
-                "FROM orders " +
-                "WHERE DATE(created_at) = CURRENT_DATE() " +
-                "AND payment_method = 'Cash' " +
-                "AND order_status != 'Rejected' " +
-                "AND order_status != 'Cancelled'";
-
-        return jdbcTemplate.queryForObject(
-                sql,
-                BigDecimal.class
-        );
+        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE DATE(created_at) = CURRENT_DATE() AND payment_method = 'Cash' AND order_status != 'Rejected' AND order_status != 'Cancelled'";
+        return jdbcTemplate.queryForObject(sql, BigDecimal.class);
     }
 
     public int getTodayOrdersCount() {
-
-        String sql = "SELECT COUNT(*) " +
-                "FROM orders " +
-                "WHERE DATE(created_at) = CURRENT_DATE()";
-
-        Integer cnt = jdbcTemplate.queryForObject(
-                sql,
-                Integer.class
-        );
-
+        String sql = "SELECT COUNT(*) FROM orders WHERE DATE(created_at) = CURRENT_DATE()";
+        Integer cnt = jdbcTemplate.queryForObject(sql, Integer.class);
         return cnt != null ? cnt : 0;
     }
 
     public int getStatusCount(String status) {
-
-        String sql = "SELECT COUNT(*) " +
-                "FROM orders " +
-                "WHERE DATE(created_at) = CURRENT_DATE() " +
-                "AND order_status = ?";
-
-        Integer cnt = jdbcTemplate.queryForObject(
-                sql,
-                Integer.class,
-                status
-        );
-
+        String sql = "SELECT COUNT(*) FROM orders WHERE DATE(created_at) = CURRENT_DATE() AND order_status = ?";
+        Integer cnt = jdbcTemplate.queryForObject(sql, Integer.class, status);
         return cnt != null ? cnt : 0;
     }
 }

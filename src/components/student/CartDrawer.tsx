@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Trash2, Plus, Minus, Clock, Calendar, AlertTriangle, ArrowRight, ShoppingBag } from 'lucide-react';
+import { X, Trash2, Plus, Minus, Clock, AlertTriangle, ArrowRight, ShoppingBag } from 'lucide-react';
 import { useCanteen } from '../../context/CanteenContext';
 
 interface CartDrawerProps {
@@ -28,14 +28,14 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  // Check for smart time conflict (if > 3 orders scheduled near requested time)
+  // Check for smart time conflict
   const isBusySlot = orders.some(
     o => o.requestedReadyTime === requestedTime && o.orderStatus !== 'Completed' && o.orderStatus !== 'Rejected'
   );
 
   const handleCheckoutClick = () => {
     if (!isCanteenOpen) {
-      alert('The canteen is currently closed for new orders.');
+      alert('The canteen is currently closed.');
       return;
     }
     if (cart.length === 0) return;
@@ -44,7 +44,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
       if (onRequireAuth) {
         onRequireAuth();
       } else {
-        alert('Please login to your student account before placing an order.');
+        alert('Please login to your student account.');
       }
       return;
     }
@@ -54,186 +54,154 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/60 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/50 backdrop-blur-xs">
         <motion.div
           initial={{ x: '100%' }}
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="bg-white dark:bg-slate-900 w-full max-w-md h-full flex flex-col shadow-2xl"
+          className="bg-white dark:bg-slate-900 w-full max-w-sm h-full flex flex-col border-l border-slate-200 dark:border-slate-800"
         >
           {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-amber-50/60 dark:bg-slate-800/60">
-            <div className="flex items-center gap-2">
-              <div className="p-2.5 bg-amber-500 text-slate-900 rounded-2xl font-black">
-                <ShoppingBag size={20} />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900 dark:text-white text-base">Your Food Cart</h3>
-                <p className="text-xs text-slate-500">{cart.length} unique items</p>
-              </div>
+          <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm">Cart</h3>
+              <p className="text-xs text-slate-400">{cart.length} items</p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               {cart.length > 0 && (
                 <button
                   onClick={clearCart}
-                  className="text-xs text-rose-500 hover:underline font-semibold flex items-center gap-1 p-1.5"
+                  className="text-xs text-rose-500 hover:text-rose-600 font-medium px-2 py-1"
                 >
-                  <Trash2 size={14} /> Clear
+                  Clear
                 </button>
               )}
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl text-slate-500 transition"
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 transition"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
           </div>
 
           {/* Cart Items List */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
             {cart.length === 0 ? (
               <div className="text-center py-20 text-slate-400">
-                <ShoppingBag size={56} className="mx-auto mb-3 stroke-1 text-amber-300 dark:text-slate-700" />
-                <p className="font-bold text-slate-700 dark:text-slate-300 text-base">Your cart is empty!</p>
-                <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
-                  Explore our appetizing menu and add delicious meals to enjoy.
-                </p>
+                <ShoppingBag size={40} className="mx-auto mb-2 stroke-1 text-slate-300 dark:text-slate-700" />
+                <p className="font-medium text-slate-600 dark:text-slate-300 text-xs">Cart is empty</p>
               </div>
             ) : (
               cart.map((item) => (
-                <motion.div
+                <div
                   key={item.foodId}
-                  layout
-                  className="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-100 dark:border-slate-700/80 flex items-center justify-between gap-3"
+                  className="p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl flex items-center justify-between gap-3 text-xs"
                 >
                   <img
                     src={item.image}
                     alt={item.name}
-                    className="w-16 h-16 rounded-xl object-cover shrink-0"
+                    className="w-12 h-12 rounded-lg object-cover shrink-0"
                     loading="eager"
                     decoding="async"
                     referrerPolicy="no-referrer"
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`w-2 h-2 rounded-full ${item.vegType === 'veg' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                      <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
-                        {item.name}
-                      </h4>
-                    </div>
-                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 mt-0.5 block">
-                      ₹{item.price} each
+                    <h4 className="font-medium text-slate-900 dark:text-white truncate">
+                      {item.name}
+                    </h4>
+                    <span className="text-slate-400 text-[11px] block">
+                      ₹{item.price}
                     </span>
                   </div>
 
                   {/* Quantity Controls */}
-                  <div className="flex items-center gap-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 p-1 rounded-xl shrink-0">
+                  <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-1 py-0.5 rounded-lg shrink-0">
                     <button
                       onClick={() => updateCartQuantity(item.foodId, item.quantity - 1)}
-                      className="p-1 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-lg text-slate-600 dark:text-slate-200"
+                      className="p-0.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-500"
                     >
-                      <Minus size={14} />
+                      <Minus size={12} />
                     </button>
                     <span className="font-bold text-xs w-4 text-center text-slate-800 dark:text-white">
                       {item.quantity}
                     </span>
                     <button
                       onClick={() => updateCartQuantity(item.foodId, item.quantity + 1)}
-                      className="p-1 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-lg text-slate-600 dark:text-slate-200"
+                      className="p-0.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-500"
                     >
-                      <Plus size={14} />
+                      <Plus size={12} />
                     </button>
                   </div>
 
                   <div className="text-right shrink-0">
-                    <span className="font-extrabold text-sm text-slate-900 dark:text-white block">
+                    <span className="font-bold text-slate-900 dark:text-white">
                       ₹{item.price * item.quantity}
                     </span>
                   </div>
-                </motion.div>
+                </div>
               ))
             )}
           </div>
 
           {/* Footer Checkout Controls */}
           {cart.length > 0 && (
-            <div className="p-4 sm:p-5 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 space-y-3 sm:space-y-4 shadow-xl pb-[max(1.25rem,env(safe-area-inset-bottom,1.25rem))]">
-              {/* FOOD READY TIME PICKER */}
-              <div className="p-3 sm:p-3.5 bg-amber-50/80 dark:bg-slate-800 rounded-2xl border border-amber-200/80 dark:border-slate-700 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <Clock size={15} className="text-amber-600" /> When should food be ready?
-                  </span>
-                  <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/60 px-2 py-0.5 rounded-full">
-                    Schedule Order
-                  </span>
-                </div>
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+              {/* Pickup Time Picker */}
+              <div className="space-y-1.5 text-xs">
+                <span className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
+                  <Clock size={13} /> Ready time
+                </span>
 
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  {/* Date Selector */}
-                  <div className="flex bg-white dark:bg-slate-700 p-1 rounded-xl border border-slate-200 dark:border-slate-600 text-xs font-semibold">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg font-medium">
                     <button
                       type="button"
                       onClick={() => setRequestedDate('Today')}
-                      className={`flex-1 py-1.5 rounded-lg text-center transition ${requestedDate === 'Today' ? 'bg-amber-500 text-slate-900 font-bold' : 'text-slate-600 dark:text-slate-300'}`}
+                      className={`flex-1 py-1 rounded text-center transition ${requestedDate === 'Today' ? 'bg-white text-slate-900 font-bold dark:bg-slate-900 dark:text-white shadow-xs' : 'text-slate-500'}`}
                     >
                       Today
                     </button>
                     <button
                       type="button"
                       onClick={() => setRequestedDate('Tomorrow')}
-                      className={`flex-1 py-1.5 rounded-lg text-center transition ${requestedDate === 'Tomorrow' ? 'bg-amber-500 text-slate-900 font-bold' : 'text-slate-600 dark:text-slate-300'}`}
+                      className={`flex-1 py-1 rounded text-center transition ${requestedDate === 'Tomorrow' ? 'bg-white text-slate-900 font-bold dark:bg-slate-900 dark:text-white shadow-xs' : 'text-slate-500'}`}
                     >
                       Tomorrow
                     </button>
                   </div>
 
-                  {/* Time Picker */}
                   <input
                     type="time"
                     value={requestedTime}
                     onChange={e => setRequestedTime(e.target.value)}
-                    className="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-100 text-center focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="bg-slate-100 dark:bg-slate-800 rounded-lg px-2 py-1 font-bold text-slate-800 dark:text-slate-100 text-center focus:outline-none"
                   />
                 </div>
 
-                {/* Smart Conflict Alert */}
                 {isBusySlot && (
-                  <div className="p-2 bg-amber-100 dark:bg-amber-950/80 rounded-xl text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-1.5 border border-amber-300">
-                    <AlertTriangle size={14} className="shrink-0 text-amber-600 mt-0.5" />
-                    <span>
-                      ⚠️ Canteen is busy around {requestedTime}. Consider picking a slot 15 mins later!
-                    </span>
+                  <div className="p-1.5 bg-amber-50 dark:bg-amber-950/40 rounded-lg text-[11px] text-amber-700 dark:text-amber-300 flex items-center gap-1">
+                    <AlertTriangle size={12} className="shrink-0" />
+                    <span>Canteen busy around {requestedTime}</span>
                   </div>
                 )}
               </div>
 
-              {/* Price Calculation */}
-              <div className="space-y-1.5 text-xs">
-                <div className="flex justify-between text-slate-500">
-                  <span>Subtotal</span>
-                  <span>₹{subtotal}</span>
-                </div>
-                <div className="flex justify-between text-slate-500">
-                  <span>Canteen Express Charge</span>
-                  <span className="text-emerald-600 font-bold">FREE</span>
-                </div>
-                <div className="flex justify-between text-base font-black text-slate-900 dark:text-white pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <span>Total Amount</span>
-                  <span className="text-amber-600 dark:text-amber-400">₹{subtotal}</span>
-                </div>
+              {/* Total & Checkout Button */}
+              <div className="flex justify-between items-center text-xs font-bold text-slate-900 dark:text-white pt-1">
+                <span className="text-slate-500">Total</span>
+                <span className="text-sm font-extrabold">₹{subtotal}</span>
               </div>
 
               <button
                 onClick={handleCheckoutClick}
                 disabled={!isCanteenOpen}
-                className="w-full py-3.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:opacity-95 text-slate-900 font-extrabold text-sm rounded-2xl shadow-lg shadow-amber-500/25 transition flex items-center justify-center gap-2 disabled:opacity-50 active:scale-98"
+                className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-medium text-xs rounded-xl transition flex items-center justify-center gap-1.5 disabled:opacity-40"
               >
-                <span>Proceed to Checkout</span>
-                <ArrowRight size={18} />
+                <span>Checkout</span>
+                <ArrowRight size={14} />
               </button>
             </div>
           )}

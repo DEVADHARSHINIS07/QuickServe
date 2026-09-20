@@ -3,40 +3,181 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#f97316" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+     <link rel="icon" href="icon.png">
     <meta name="format-detection" content="telephone=no" />
-    <link rel="icon" href="icon.png">
-    <title>QuickServe - Smart Canteen & Real-Time Queue</title>
+    <title>QuickServe</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate icon" href="/favicon.ico" />
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <meta name="description" content="QuickServe Smart Canteen Portal for AAA College students and staff with college mail domain verification, online food ordering, priority queue, and real-time order tracking." />
+    <meta property="og:title" content="QuickServe" />
+    <meta property="og:description" content="QuickServe Smart Canteen Portal for AAA College students and staff with college mail domain verification, online food ordering, priority queue, and real-time order tracking." />
+    <!-- Canvas 2D willReadFrequently & Web-Vitals / Extension Error Interceptor -->
+    <script>
+      (function() {
+        try {
+          var originalGetContext = HTMLCanvasElement.prototype.getContext;
+          HTMLCanvasElement.prototype.getContext = function(type, attributes) {
+            if (type === '2d') {
+              attributes = Object.assign({ willReadFrequently: true }, attributes);
+            }
+            return originalGetContext.call(this, type, attributes);
+          };
+        } catch (e) {}
+
+        window.onerror = function(message, source, lineno, colno, error) {
+          var msg = String(message || '') + ' ' + (error && error.message ? error.message : '');
+          if (msg.indexOf('startTime') !== -1 || msg.indexOf('reportAllChanges') !== -1) {
+            return true;
+          }
+          return false;
+        };
+
+        window.addEventListener('error', function(e) {
+          var msg = (e && (e.message || (e.error && e.error.message))) || '';
+          if (msg.indexOf("reading 'startTime'") !== -1 || msg.indexOf("reportAllChanges") !== -1) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            return true;
+          }
+        }, true);
+
+        window.addEventListener('unhandledrejection', function(e) {
+          var reason = e && e.reason ? String(e.reason.message || e.reason) : '';
+          if (reason.indexOf("startTime") !== -1 || reason.indexOf("reportAllChanges") !== -1) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+          }
+        });
+      })();
+    </script>
   </head>
   <body class="h-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased selection:bg-slate-900 selection:text-white dark:selection:bg-white dark:selection:text-slate-900">
-        <div id="root" class="min-h-full flex flex-col">
-      <!-- Fallback display if opened via VS Code Live Server (port 5500) instead of Vite dev server -->
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; background: #0b0f17; color: #f8fafc;">
-        <div style="max-width: 520px; width: 100%; background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 28px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
-            <span style="font-size: 22px;">⚡</span>
-            <h2 style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">QuickServe Smart Canteen</h2>
-          </div>
-          <p style="font-size: 13px; line-height: 1.6; color: #94a3b8; margin: 0 0 16px 0;">
-            QuickServe is a <strong>React + TypeScript + Express</strong> full-stack app. TypeScript files (<code style="background: #1e293b; color: #e2e8f0; padding: 2px 6px; border-radius: 6px; font-size: 12px;">/src/main.tsx</code>) must be compiled by Vite and cannot be served directly with VS Code Live Server (port 5500).
-          </p>
-          <div style="background: #0b0f17; border: 1px solid #1e293b; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
-            <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 8px;">To start QuickServe properly:</div>
-            <div style="font-family: monospace; font-size: 13px; color: #94a3b8; margin-bottom: 6px;">1. Open VS Code terminal: <strong style="color: #ffffff;">Ctrl + `</strong></div>
-            <div style="font-family: monospace; font-size: 13px; color: #4ade80; margin-bottom: 6px;">2. Run: <strong style="background: #162032; padding: 2px 6px; border-radius: 4px;">npm run dev</strong></div>
-            <div style="font-family: monospace; font-size: 13px; color: #94a3b8;">3. Open: <a href="http://localhost:5000" style="color: #60a5fa; text-decoration: underline; font-weight: 700;">http://localhost:5000</a></div>
-          </div>
-          <p style="font-size: 12px; color: #64748b; margin: 0;">
-            Running <code style="color: #cbd5e1;">npm run dev</code> starts the backend API and compiles all TypeScript files with correct JavaScript MIME types.
-          </p>
+    <div id="root" class="min-h-full flex flex-col">
+      <!-- Lightweight, elegant initial preloader while React mounts -->
+      <div id="app-preloader" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: #0b0f17; color: #f8fafc; padding: 24px;">
+        <div style="position: relative; width: 44px; height: 44px; margin-bottom: 16px;">
+          <div style="position: absolute; inset: 0; border: 3px solid rgba(255,255,255,0.08); border-top-color: #10b981; border-radius: 50%; animation: qs-spin 0.8s linear infinite;"></div>
         </div>
+        <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: #f8fafc;">QuickServe Smart Canteen</div>
+        <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Loading portal...</div>
+        <style>
+          @keyframes qs-spin { to { transform: rotate(360deg); } }
+        </style>
       </div>
     </div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="/src/main.tsx" id="qs-vite-entry"></script>
+    <script>
+      (function() {
+        var viteEntry = document.getElementById('qs-vite-entry');
+        var isMounted = false;
+
+        // Detect if opened via static server (e.g. VS Code Live Server on port 5000, 5500 or file:// protocol)
+        var isStaticLiveServer = (
+          window.location.protocol === 'file:' ||
+          window.location.port === '5000' ||
+          window.location.port === '5500' ||
+          (window.location.hostname === 'localhost' && window.location.port !== '5000' && window.location.port !== '') ||
+          (window.location.hostname === '127.0.0.1' && window.location.port !== '5000' && window.location.port !== '')
+        );
+
+        var hasAttemptedFallback = false;
+
+        function tryLoadProductionFallback() {
+          if (isMounted || hasAttemptedFallback) return;
+          hasAttemptedFallback = true;
+          console.log('[QuickServe] Attempting to load precompiled bundle in static server environment...');
+          
+          var bundleCss = document.createElement('link');
+          bundleCss.rel = 'stylesheet';
+          bundleCss.href = './dist/assets/index.css';
+          document.head.appendChild(bundleCss);
+
+          var bundleJs = document.createElement('script');
+          bundleJs.type = 'module';
+          bundleJs.src = './dist/assets/app.js';
+          
+          bundleJs.onload = function() {
+            isMounted = true;
+            console.log('[QuickServe] Precompiled production bundle mounted successfully.');
+          };
+
+          bundleJs.onerror = function() {
+            renderLiveServerGuide();
+          };
+
+          document.body.appendChild(bundleJs);
+        }
+
+        function renderLiveServerGuide() {
+          var preloader = document.getElementById('app-preloader');
+          if (!preloader) return;
+          var curPort = window.location.port || (window.location.protocol === 'file:' ? 'file' : '5000');
+          preloader.innerHTML = [
+            '<div style="max-width: 540px; width: 100%; background: #111827; border: 1px solid #1f2937; border-radius: 20px; padding: 28px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6); text-align: left;">',
+              '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">',
+                '<div style="display: flex; align-items: center; gap: 10px;">',
+                  '<span style="font-size: 24px;">⚡</span>',
+                  '<h2 style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">QuickServe Smart Canteen</h2>',
+                '</div>',
+                '<span style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 9999px;">Live Server (Port ' + curPort + ')</span>',
+              '</div>',
+              '<div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px;">',
+                '<div style="color: #fbbf24; font-size: 13px; font-weight: 600; margin-bottom: 4px;">⚠️ VS Code Live Server Cannot Run TypeScript/React Apps</div>',
+                '<div style="color: #cbd5e1; font-size: 12px; line-height: 1.5;">VS Code Live Server serves plain HTML files without compiling TypeScript (<code>/src/main.tsx</code>). QuickServe requires the Vite + Node development server to run.</div>',
+              '</div>',
+              '<div style="background: #0b0f17; border: 1px solid #1e293b; border-radius: 12px; padding: 16px; margin-bottom: 18px;">',
+                '<div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 8px;">Step 1: In VS Code Terminal, run:</div>',
+                '<div style="display: flex; align-items: center; justify-content: space-between; background: #111827; border: 1px solid #1f2937; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px;">',
+                  '<code style="font-family: monospace; font-size: 14px; font-weight: 700; color: #4ade80;">npm run dev</code>',
+                  '<button id="btn-copy-cmd" style="background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 6px; padding: 5px 12px; font-size: 11px; font-weight: 600; cursor: pointer;">Copy</button>',
+                '</div>',
+                '<div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 8px;">Step 2: Open QuickServe in browser:</div>',
+                '<div style="font-family: monospace; font-size: 13px; color: #60a5fa; font-weight: 600;">http://localhost:5000</div>',
+              '</div>',
+              '<div style="display: flex; gap: 10px;">',
+                '<a href="http://localhost:5000" style="flex: 1; text-align: center; background: #10b981; hover:background: #059669; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 12px 16px; border-radius: 10px; display: inline-block; transition: all 0.2s;">Open http://localhost:5000 &rarr;</a>',
+                '<button onclick="window.location.reload()" style="background: #1e293b; color: #cbd5e1; border: 1px solid #334155; font-size: 13px; font-weight: 600; padding: 12px 16px; border-radius: 10px; cursor: pointer;">Refresh</button>',
+              '</div>',
+            '</div>'
+          ].join('');
+
+          var copyBtn = document.getElementById('btn-copy-cmd');
+          if (copyBtn) {
+            copyBtn.onclick = function() {
+              if (navigator.clipboard) {
+                navigator.clipboard.writeText('npm run dev');
+                copyBtn.innerText = 'Copied!';
+                setTimeout(function() { copyBtn.innerText = 'Copy'; }, 2000);
+              }
+            };
+          }
+        }
+
+        if (viteEntry) {
+          viteEntry.addEventListener('error', function() {
+            tryLoadProductionFallback();
+          });
+        }
+
+        window.addEventListener('error', function(e) {
+          var src = (e && e.target && e.target.src) || '';
+          if (src.indexOf('main.tsx') !== -1) {
+            tryLoadProductionFallback();
+          }
+        }, true);
+
+        if (isStaticLiveServer) {
+          setTimeout(function() {
+            if (!isMounted && document.getElementById('app-preloader')) {
+              tryLoadProductionFallback();
+            }
+          }, 600);
+        }
+      })();
+    </script>
   </body>
 </html>
 

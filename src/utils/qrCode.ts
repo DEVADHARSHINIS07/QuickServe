@@ -17,30 +17,31 @@ export interface UPIPayloadOptions {
 
 /**
  * Builds standard NPCI-compliant UPI payment URI
- * Example: upi://pay?pa=canteen.aaacet@okaxis&pn=AAA%20College%20Canteen&am=120.00&cu=INR&tn=QuickServe%20ORD123&tr=ORD123
- * Note: Never include 'mode=02' without RSA PKI signature (sign param), as UPI apps reject it as invalid/tampered.
+ * Example: upi://pay?pa=canteen.aaacet@okaxis&pn=AAA%20College%20Canteen&am=120.00&cu=INR&tn=Meal%20Order
+ * Note: Never include 'tr' or 'mode=02' for peer-to-merchant VPAs without NPCI signed merchant keys,
+ * as Google Pay, PhonePe, and Paytm will reject the QR code with "Invalid Transaction Reference".
  */
 export function buildUPIPaymentURI(options: UPIPayloadOptions): string {
   const cleanUpiId = (options.upiId || 'canteen.aaacet@okaxis').trim();
   const cleanPayee = (options.payeeName || 'AAA College Canteen').trim();
   const cleanAmount = Number(options.amount).toFixed(2);
-  const orderRef = options.orderId ? options.orderId.trim().replace(/[^a-zA-Z0-9_-]/g, '') : `ORD${Date.now().toString().slice(-6)}`;
-  const cleanNote = (options.note || `QuickServe ${orderRef}`).trim().slice(0, 45);
+  const cleanNote = (options.note || 'Canteen Food Order')
+    .replace(/[^a-zA-Z0-9 ]/g, '')
+    .trim()
+    .slice(0, 30);
 
-  // Standard NPCI dynamic payment parameters:
-  // pa = payee VPA (literal '@' required by PhonePe/GPay)
-  // pn = payee legal name
+  // Standard NPCI dynamic payment parameters universally accepted by GPay, PhonePe, Paytm, BHIM:
+  // pa = payee VPA (literal '@' required by all UPI apps)
+  // pn = payee legal/display name
   // am = transaction amount in INR
   // cu = currency code (INR)
-  // tn = transaction note
-  // tr = transaction reference ID for reconciliation
+  // tn = transaction note (alphanumeric description)
   const parts = [
     `pa=${cleanUpiId}`,
     `pn=${encodeURIComponent(cleanPayee)}`,
     `am=${cleanAmount}`,
     `cu=${options.currency || 'INR'}`,
-    `tn=${encodeURIComponent(cleanNote)}`,
-    `tr=${encodeURIComponent(orderRef)}`
+    `tn=${encodeURIComponent(cleanNote || 'Canteen Order')}`
   ];
 
   return `upi://pay?${parts.join('&')}`;
@@ -48,24 +49,24 @@ export function buildUPIPaymentURI(options: UPIPayloadOptions): string {
 
 /**
  * Synchronously generates an authentic, ISO/IEC 18004 compliant vector SVG string
- * using QRCode.create for instant, zero-delay rendering with valid BCH format info and Reed-Solomon ECC.
+ * using QRCode.create for instant, zero-delay rendering with valid format info.
  */
 export function generateQRSVGString(text: string, margin = 2): string {
   try {
     const qr = QRCode.create(text, { errorCorrectionLevel: 'M' });
     const size = qr.modules.size;
     const totalSize = size + margin * 2;
-    let paths = '';
+    let rects = '';
 
     for (let r = 0; r < size; r++) {
       for (let c = 0; c < size; c++) {
         if (qr.modules.get(r, c)) {
-          paths += `M${c + margin},${r + margin}h1v1h-1z `;
+          rects += `<rect x="${c + margin}" y="${r + margin}" width="1" height="1" fill="#000000"/>`;
         }
       }
     }
 
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalSize} ${totalSize}" shape-rendering="crispEdges" width="100%" height="100%"><rect width="${totalSize}" height="${totalSize}" fill="#ffffff"/><path d="${paths}" fill="#000000"/></svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalSize} ${totalSize}" width="100%" height="100%" shape-rendering="crispEdges"><rect width="${totalSize}" height="${totalSize}" fill="#ffffff"/>${rects}</svg>`;
   } catch (err) {
     console.error('[QuickServe QR] Synchronous SVG generation error:', err);
     return '';
@@ -82,51 +83,33 @@ export function generateUPIQRCode(payload: string): { svg: string; dataUrl: stri
 }
 
 /**
- * Asynchronously generates high-resolution, certified ISO/IEC 18004 QR code SVG and PNG data URL.
+ * Asynchronously generates high-resolution, certified ISO/IEC 18004 QR code SVG and high-res PNG data URL.
  * Scannable with 100% accuracy on Google Pay, PhonePe, Paytm, BHIM, Camera, and Google Lens.
  */
 export async function generateUPIQRCodeAsync(payload: string): Promise<{ svg: string; dataUrl: string }> {
   try {
-    // Generate optimized vector SVG using official QRCode engine
-    const svg = await QRCode.toString(payload, {
-      type: 'svg',
-      margin: 2,
-      errorCorrectionLevel: 'M',
-      color: {
-        dark: '#000000',
-        light: '#ffffff',
-      },
-    });
+    const [svg, pngDataUrl] = await Promise.all([
+      QRCode.toString(payload, {
+        type: 'svg',
+        margin: 2,
+        errorCorrectionLevel: 'M',
+        color: {
+          dark: '#000000',
+          light: '#ffffff',
+        },
+      }),
+      QRCode.toDataURL(payload, {
+        width: 400,
+        margin: 2,
+        errorCorrectionLevel: 'M',
+        color: {
+          dark: '#000000',
+          light: '#ffffff',
+        },
+      }),
+    ]);
 
-    let dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-
-    // If browser supports Canvas, render high-res PNG for download & image display
-    if (typeof document !== 'undefined') {
-      try {
-        const canvas = document.createElement('canvas');
-        const size = 360;
-        canvas.width = size;
-        canvas.height = size;
-        await QRCode.toCanvas(canvas, payload, {
-          width: size,
-          margin: 2,
-          errorCorrectionLevel: 'M',
-          color: {
-            dark: '#000000',
-            light: '#ffffff',
-          },
-        });
-        const pngUrl = canvas.toDataURL('image/png');
-        if (pngUrl && pngUrl.startsWith('data:image/png')) {
-          dataUrl = pngUrl;
-        }
-      } catch (canvasErr) {
-        // Fallback to SVG data URL is already set
-        console.debug('[QuickServe QR] Using SVG data URL (canvas unavailable):', canvasErr);
-      }
-    }
-
-    return { svg, dataUrl };
+    return { svg, dataUrl: pngDataUrl };
   } catch (err) {
     console.warn('[QuickServe QR] Async generation error, using sync fallback:', err);
     return generateUPIQRCode(payload);

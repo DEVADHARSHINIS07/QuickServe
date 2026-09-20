@@ -105,7 +105,6 @@ USE smart_canteen;
 
 Default Seed Accounts:
 - **Canteen Admin**: `admin@aaacet.ac.in` / `admin123`
-- **Student User**: `24urcs029@aaacet.ac.in` / `password123`
 
 ---
 

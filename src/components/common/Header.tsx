@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { ShoppingBag, Bell, User, Utensils, Shield, LogOut, CheckCircle, Clock, AlertCircle, LogIn, ChevronDown, Mail } from 'lucide-react';
-import { useCanteen, CampusInboxModal } from '../../context/CanteenContext';
+import { ShoppingBag, Bell, User, Utensils, Shield, LogOut, CheckCircle, Clock, AlertCircle, LogIn, ChevronDown, UserPlus } from 'lucide-react';
+import { useCanteen } from '../../context/CanteenContext';
 import { ThemeToggle } from '../../context/ThemeContext';
 
 interface HeaderProps {
@@ -30,7 +30,6 @@ export const Header: React.FC<HeaderProps> = ({
   } = useCanteen();
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showMailModal, setShowMailModal] = useState(false);
 
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -92,25 +91,25 @@ export const Header: React.FC<HeaderProps> = ({
             <>
               <button
                 onClick={() => onNavigate('/student/menu')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'menu' || activeView === 'student_menu' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                className={`px-3.5 py-1.5 rounded-full transition-all ${activeView === 'menu' || activeView === 'student_menu' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-semibold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
-                Food Menu
+                Menu
               </button>
               <button
                 onClick={() => onNavigate('/student/order-tracking')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'tracking' || activeView === 'student_tracking' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                className={`px-3.5 py-1.5 rounded-full transition-all ${activeView === 'tracking' || activeView === 'student_tracking' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-semibold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
-                Live Tracking
+                Tracking
               </button>
               <button
                 onClick={() => onNavigate('/student/history')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'history' || activeView === 'student_history' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                className={`px-3.5 py-1.5 rounded-full transition-all ${activeView === 'history' || activeView === 'student_history' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-semibold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
-                Order History
+                History
               </button>
               <button
                 onClick={() => onNavigate('/student/favorites')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'favorites' || activeView === 'student_favorites' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                className={`px-3.5 py-1.5 rounded-full transition-all ${activeView === 'favorites' || activeView === 'student_favorites' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-semibold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 Favorites
               </button>
@@ -119,31 +118,31 @@ export const Header: React.FC<HeaderProps> = ({
             <>
               <button
                 onClick={() => onNavigate('/admin/dashboard')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'admin_dashboard' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                className={`px-3.5 py-1.5 rounded-full transition-all ${activeView === 'admin_dashboard' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-semibold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 Dashboard
               </button>
               <button
                 onClick={() => onNavigate('/admin/orders')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'admin_orders' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                className={`px-3.5 py-1.5 rounded-full transition-all ${activeView === 'admin_orders' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-semibold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
-                Order Queue
+                Orders
               </button>
               <button
                 onClick={() => onNavigate('/admin/food')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'admin_food' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                className={`px-3.5 py-1.5 rounded-full transition-all ${activeView === 'admin_food' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-semibold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
-                Food Manager
+                Food
               </button>
               <button
                 onClick={() => onNavigate('/admin/schedule')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'admin_schedule' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                className={`px-3.5 py-1.5 rounded-full transition-all ${activeView === 'admin_schedule' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-semibold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 Schedule
               </button>
               <button
                 onClick={() => onNavigate('/admin/analytics')}
-                className={`px-4 py-1.5 rounded-full transition-all ${activeView === 'admin_analytics' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                className={`px-3.5 py-1.5 rounded-full transition-all ${activeView === 'admin_analytics' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-semibold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 Analytics
               </button>
@@ -155,16 +154,6 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
           {/* Lite / Dark Theme Toggle */}
           <ThemeToggle />
-
-          {/* Campus Mail Viewer */}
-          <button
-            onClick={() => setShowMailModal(true)}
-            className="p-2 sm:p-2.5 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:text-slate-900 dark:hover:text-white transition relative shadow-xs"
-            aria-label="Campus Mail Viewer"
-            title="Campus Mail Delivery Viewer"
-          >
-            <Mail size={16} className="sm:w-[18px] sm:h-[18px]" />
-          </button>
 
           {/* Notifications Trigger */}
           <button
@@ -224,6 +213,19 @@ export const Header: React.FC<HeaderProps> = ({
                     </span>
                   </div>
 
+                  {currentRole === 'admin' && (
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        onNavigate('/admin/register');
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 transition text-xs border-b border-slate-100 dark:border-slate-800"
+                    >
+                      <UserPlus size={15} className="text-slate-500" />
+                      <span>Create Admin Account</span>
+                    </button>
+                  )}
+
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2.5 text-rose-600 dark:text-rose-400 font-bold hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2 transition"
@@ -255,11 +257,6 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
       </div>
-
-      <CampusInboxModal
-        isOpen={showMailModal}
-        onClose={() => setShowMailModal(false)}
-      />
     </header>
   );
 };

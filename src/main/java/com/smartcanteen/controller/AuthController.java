@@ -39,6 +39,50 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.ok("Admin login successful", resp));
     }
 
+    @Autowired
+    private com.smartcanteen.repository.UserRepository userRepository;
+
+    @Autowired
+    private com.smartcanteen.security.JwtTokenProvider tokenProvider;
+
+    @GetMapping({"/me", "/verify"})
+    public ResponseEntity<ApiResponse<AuthResponse>> getCurrentUser(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body(ApiResponse.error("Missing or invalid authorization header"));
+        }
+        String token = authHeader.substring(7);
+        if (!tokenProvider.validateToken(token)) {
+            return ResponseEntity.status(401).body(ApiResponse.error("Token is expired or invalid"));
+        }
+        String email = tokenProvider.getEmailFromJwt(token);
+        com.smartcanteen.model.User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null) {
+            String studentId = email.contains("@") ? email.split("@")[0].toUpperCase() : "STUDENT";
+            String role = email.contains("admin") ? "admin" : "student";
+            AuthResponse resp = new AuthResponse(
+                    token,
+                    "usr_" + Math.abs(email.hashCode()),
+                    studentId,
+                    "AAA College " + ("admin".equalsIgnoreCase(role) ? "Admin" : "Student"),
+                    email,
+                    "",
+                    role
+            );
+            return ResponseEntity.ok(ApiResponse.ok("Session verified successfully", resp));
+        }
+        AuthResponse resp = new AuthResponse(
+                token,
+                user.getUserId(),
+                user.getStudentId(),
+                user.getName(),
+                user.getEmail(),
+                user.getMobile(),
+                user.getRole()
+        );
+        return ResponseEntity.ok(ApiResponse.ok("Session verified successfully", resp));
+    }
+
     @PostMapping("/forgot-password")
     public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
         authService.initiateForgotPassword(req);

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, CheckCircle2, ShieldCheck, Copy, Loader2, Smartphone, 
   AlertCircle, KeyRound, Check, WifiOff, Download, QrCode,
-  CreditCard, ArrowRight, HelpCircle, Edit3, RotateCcw
+  CreditCard, ArrowRight, HelpCircle
 } from 'lucide-react';
 import { generateUPIQRCode, generateUPIQRCodeAsync, buildUPIPaymentURI } from '../../utils/qrCode';
 import { useCanteen } from '../../context/CanteenContext';
@@ -67,13 +67,10 @@ export const UPIPaymentModal: React.FC<UPIPaymentModalProps> = ({
   const [customKeyId, setCustomKeyId] = useState<string>('');
   const [showKeyConfig, setShowKeyConfig] = useState<boolean>(false);
   const [gatewayKey, setGatewayKey] = useState<string>('');
-  const [customUpiId, setCustomUpiId] = useState<string>('');
-  const [isEditingUpi, setIsEditingUpi] = useState<boolean>(false);
-  const [tempUpiInput, setTempUpiInput] = useState<string>('');
 
   const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const effectiveUpiId = (customUpiId.trim() || canteenConfig.upiId || 'canteen.aaacet@okaxis').trim();
-  const upiId = effectiveUpiId;
+  // Canteen Official UPI VPA configured exclusively by Administrator
+  const upiId = (canteenConfig.upiId || 'canteen.aaacet@okaxis').trim();
   const payeeName = canteenConfig.merchantName || 'AAA College Canteen';
 
   const isMobileDevice = typeof navigator !== 'undefined' && (
@@ -143,7 +140,7 @@ export const UPIPaymentModal: React.FC<UPIPaymentModalProps> = ({
       }
     };
 
-    generateClientQR(fallbackId, effectiveUpiId);
+    generateClientQR(fallbackId, upiId);
 
     // If online, sync with backend order creation
     if (typeof navigator === 'undefined' || navigator.onLine) {
@@ -152,7 +149,7 @@ export const UPIPaymentModal: React.FC<UPIPaymentModalProps> = ({
           if (!isMounted) return;
           const oId = res.data?.id || res.data?.orderId || fallbackId;
           setOrderId(oId);
-          generateClientQR(oId, effectiveUpiId);
+          generateClientQR(oId, upiId);
           if (res.data?.key && isValidRazorpayKey(res.data.key)) {
             setGatewayKey(res.data.key);
           }
@@ -171,7 +168,7 @@ export const UPIPaymentModal: React.FC<UPIPaymentModalProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [isOpen, totalAmount, effectiveUpiId, payeeName]);
+  }, [isOpen, totalAmount, upiId, payeeName]);
 
   if (!isOpen) return null;
 
@@ -519,19 +516,18 @@ export const UPIPaymentModal: React.FC<UPIPaymentModalProps> = ({
 
                   {/* Scannable QR Frame */}
                   <div className="w-48 h-48 sm:w-52 sm:h-52 bg-white p-3 rounded-2xl shadow-sm mx-auto flex items-center justify-center relative overflow-hidden border-2 border-slate-900/10 dark:border-slate-700">
-                    {qrCodeSvg ? (
+                    {qrCodeUrl ? (
+                      <img 
+                        src={qrCodeUrl} 
+                        alt="Canteen Official UPI QR Code" 
+                        className="w-full h-full object-contain"
+                        loading="eager"
+                        decoding="sync"
+                      />
+                    ) : qrCodeSvg ? (
                       <div 
                         className="w-full h-full flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:max-w-full [&>svg]:max-h-full"
                         dangerouslySetInnerHTML={{ __html: qrCodeSvg }}
-                      />
-                    ) : qrCodeUrl ? (
-                      <img 
-                        src={qrCodeUrl} 
-                        alt="Original Canteen UPI QR Code" 
-                        className="w-full h-full object-contain"
-                        loading="eager"
-                        decoding="async"
-                        referrerPolicy="no-referrer"
                       />
                     ) : (
                       <div className="flex flex-col items-center justify-center gap-1.5 text-slate-400">
@@ -575,88 +571,36 @@ export const UPIPaymentModal: React.FC<UPIPaymentModalProps> = ({
                   </div>
                 </div>
 
-                {/* Canteen Official Verified UPI ID Box with Custom VPA option */}
-                <div className="p-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs space-y-2">
+                {/* Canteen Official Verified UPI ID Box (Strictly Managed by Admin - Read-Only for Students) */}
+                <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-2xl text-xs space-y-1.5">
                   <div className="flex items-center justify-between">
                     <div className="text-left min-w-0 pr-2">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-slate-400 block font-semibold uppercase">
-                          {customUpiId ? 'Active Custom UPI VPA' : 'Canteen Official UPI VPA'}
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-slate-400 dark:text-slate-400 block font-bold uppercase tracking-wider">
+                          Official Canteen Receiving UPI VPA
                         </span>
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                       </div>
-                      <span className="font-mono font-bold text-slate-800 dark:text-slate-200 truncate block text-xs">
+                      <span className="font-mono font-extrabold text-slate-900 dark:text-white truncate block text-xs mt-0.5 select-all">
                         {upiId}
                       </span>
-                      <span className="text-[10px] text-slate-400">Payee: {payeeName}</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Payee: {payeeName}</span>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <button
                         type="button"
-                        onClick={() => {
-                          setIsEditingUpi(!isEditingUpi);
-                          setTempUpiInput(upiId);
-                        }}
-                        className="p-1.5 px-2 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition text-[11px] font-bold flex items-center gap-1 cursor-pointer"
-                        title="Change or test with another UPI ID"
-                      >
-                        <Edit3 size={12} />
-                        <span>{isEditingUpi ? 'Close' : 'Edit'}</span>
-                      </button>
-                      <button
-                        type="button"
                         onClick={copyUPI}
-                        className="p-1.5 px-2.5 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition text-[11px] font-bold flex items-center gap-1 shadow-xs cursor-pointer"
+                        className="p-2 px-3 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition text-[11px] font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                        title="Copy Canteen UPI VPA"
                       >
                         {copiedUpi ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
                         <span>{copiedUpi ? 'Copied' : 'Copy VPA'}</span>
                       </button>
                     </div>
                   </div>
-
-                  {isEditingUpi && (
-                    <div className="pt-2 border-t border-slate-200 dark:border-slate-700 space-y-1.5 text-left">
-                      <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 block">
-                        Enter UPI ID for QR Code:
-                      </label>
-                      <div className="flex gap-1.5">
-                        <input
-                          type="text"
-                          value={tempUpiInput}
-                          onChange={(e) => setTempUpiInput(e.target.value)}
-                          placeholder="e.g. yourname@okaxis"
-                          className="flex-1 p-1.5 px-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-900"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setCustomUpiId(tempUpiInput.trim());
-                            setIsEditingUpi(false);
-                          }}
-                          className="px-3 py-1.5 bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-lg font-bold text-[11px] cursor-pointer hover:opacity-90"
-                        >
-                          Apply
-                        </button>
-                        {customUpiId && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setCustomUpiId('');
-                              setTempUpiInput('');
-                              setIsEditingUpi(false);
-                            }}
-                            className="p-1.5 px-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-[11px] font-bold cursor-pointer"
-                            title="Reset to Canteen Official UPI ID"
-                          >
-                            <RotateCcw size={12} />
-                          </button>
-                        )}
-                      </div>
-                      <span className="text-[10px] text-slate-400 block">
-                        Original QR updates immediately. Scannable with GPay, PhonePe, Paytm, and BHIM.
-                      </span>
-                    </div>
-                  )}
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 text-left">
+                    Verified Canteen account configured by administration. Scan above QR with any UPI app to pay.
+                  </p>
                 </div>
 
                 {/* Real Payment Verification: 12-Digit UTR Input */}
