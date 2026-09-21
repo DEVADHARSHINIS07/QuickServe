@@ -79,6 +79,63 @@ async function startServer() {
     });
   });
 
+  const SPRING_BOOT_BASE_URL = process.env.SPRING_BOOT_URL || "http://localhost:8080";
+
+  // Transparently forward API calls to Spring Boot (port 8080) when running locally
+  app.use("/api", async (req, res, next) => {
+    // Endpoints specific to browser development demo utilities
+    if (req.path === "/auth/demo-accounts" || req.path === "/auth/verify-email/send-code" || req.path === "/auth/verify-email/verify-code") {
+      return next();
+    }
+
+    const targetUrl = `${SPRING_BOOT_BASE_URL}${req.originalUrl}`;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+      const headers: Record<string, string> = {
+        Accept: "application/json",
+      };
+      if (req.headers["content-type"]) {
+        headers["Content-Type"] = String(req.headers["content-type"]);
+      }
+      if (req.headers["authorization"]) {
+        headers["Authorization"] = String(req.headers["authorization"]);
+      }
+
+      const fetchOptions: RequestInit = {
+        method: req.method,
+        headers,
+        signal: controller.signal,
+      };
+
+      if (req.method !== "GET" && req.method !== "HEAD" && req.body && Object.keys(req.body).length > 0) {
+        fetchOptions.body = JSON.stringify(req.body);
+      }
+
+      const sbRes = await fetch(targetUrl, fetchOptions);
+      clearTimeout(timeoutId);
+
+      // If Spring Boot doesn't have this route, let local server handle it
+      if (sbRes.status === 404) {
+        return next();
+      }
+
+      res.status(sbRes.status);
+      sbRes.headers.forEach((value, name) => {
+        const lower = name.toLowerCase();
+        if (lower !== "content-encoding" && lower !== "transfer-encoding" && lower !== "content-length") {
+          res.setHeader(name, value);
+        }
+      });
+      const data = await sbRes.text();
+      return res.send(data);
+    } catch {
+      // Spring Boot port 8080 not reachable -> fall back to local handlers
+      return next();
+    }
+  });
+
   // API Health Check
   app.get(["/api/health", "/health"], (req, res) => {
     res.json({

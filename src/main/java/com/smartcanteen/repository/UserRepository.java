@@ -67,7 +67,8 @@ public class UserRepository {
     public int save(User user) {
         String sql = "INSERT INTO users (user_id, student_id, name, email, mobile, password_hash, role, account_status, email_verified) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        return jdbcTemplate.update(sql,
+
+        int result = jdbcTemplate.update(sql,
                 user.getUserId(),
                 user.getStudentId(),
                 user.getName(),
@@ -78,10 +79,20 @@ public class UserRepository {
                 user.getAccountStatus() != null ? user.getAccountStatus() : "ACTIVE",
                 user.isEmailVerified()
         );
+
+        System.out.println("=================================");
+        System.out.println("USER INSERT RESULT = " + result);
+        System.out.println("USER ID = " + user.getUserId());
+        System.out.println("EMAIL = " + user.getEmail());
+        System.out.println("=================================");
+
+        return result;
     }
+
 
     public int updatePassword(Long userId, String newPasswordHash) {
         String sql = "UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
         return jdbcTemplate.update(sql, newPasswordHash, userId);
     }
 }
+

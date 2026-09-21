@@ -10,8 +10,8 @@
             "server": "localhost",
             "port": 3306,
             "driver": "MySQL",
-            "name": "MySQL",
-            "database": "quickserve",
+            "name": "MySQL Local",
+            "database": "smart_canteen",
             "username": "root",
             "password": "student",
             "connectionTimeout": 30

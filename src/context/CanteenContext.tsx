@@ -305,7 +305,15 @@ export const CanteenProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
     }
 
-    // Resilient fallback when backend is unreachable: register locally
+    // When running locally and backend is not responding, do not fake success
+    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      return {
+        success: false,
+        message: 'Could not connect to Spring Boot backend or MySQL on port 8080. Please check your MySQL credentials and run mvn spring-boot:run.'
+      };
+    }
+
+    // Resilient fallback when in demo sandbox without local backend: register locally
     const sId = data.studentId.toUpperCase();
     const fallbackUser: User = {
       userId: sId,
@@ -400,6 +408,14 @@ export const CanteenProvider: React.FC<{ children: React.ReactNode }> = ({ child
           message: apiRes.message || 'Admin registration failed.'
         };
       }
+    }
+
+    // When running locally and backend is not responding, do not fake success
+    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      return {
+        success: false,
+        message: 'Could not connect to Spring Boot backend or MySQL on port 8080. Please check your MySQL credentials and run mvn spring-boot:run.'
+      };
     }
 
     const adminId = `ADM_${Date.now().toString().slice(-4)}`;

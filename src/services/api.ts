@@ -20,10 +20,7 @@ export const getCandidateBaseUrls = (): string[] => {
     urls.push(resolvedApiBaseUrl);
   }
 
-  // 1. Relative path works with Vite proxy, Express dev server, and Cloud Run production
-  urls.push('/api');
-
-  // 2. Custom environment variable if explicitly configured
+  // 1. Custom environment variable if explicitly configured (e.g. VITE_API_BASE_URL)
   const envUrl = ((import.meta as any).env?.VITE_API_BASE_URL as string | undefined)?.trim();
   if (envUrl && !urls.includes(envUrl)) {
     const cleanEnv = envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
@@ -31,6 +28,14 @@ export const getCandidateBaseUrls = (): string[] => {
       urls.push(cleanEnv);
     }
   }
+
+  // 2. When running locally in the browser, probe Spring Boot backend on port 8080 first
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    urls.push('http://localhost:8080/api');
+  }
+
+  // 3. Relative path works with Vite proxy, Express dev server, and Cloud Run production
+  urls.push('/api');
 
   return Array.from(new Set(urls));
 };
