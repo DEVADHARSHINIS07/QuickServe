@@ -379,3 +379,9 @@ export const apiVerifyPayment = async (data: {
   return apiRequest<any>('/payment/verify', 'POST', data, false);
 };
 
+// 7. CLEAR / PURGE REGISTRATION DATA
+export const apiClearAllRegistrationData = async () => {
+  return apiRequest<{ removedCount?: number }>('/auth/clear-user-data', 'POST', {}, false);
+};
+
+

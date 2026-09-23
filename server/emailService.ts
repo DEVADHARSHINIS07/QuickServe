@@ -134,9 +134,8 @@ export function validateOriginalCollegeEmail(email: string): {
 
   const [localPart, domainPart] = cleanEmail.split("@");
 
-  // Reject public, commercial, or temporary/disposable domains
+  // Reject temporary or disposable domains
   const blockedDomains = [
-    "gmail.com",
     "yahoo.com",
     "outlook.com",
     "hotmail.com",
@@ -154,29 +153,31 @@ export function validateOriginalCollegeEmail(email: string): {
   if (blockedDomains.includes(domainPart)) {
     return {
       isOriginal: false,
-      reason: `Original college email required. "${domainPart}" is not permitted; please use your official @aaacet.ac.in address.`,
+      reason: `Temporary or unsupported domain "${domainPart}" is not permitted. Please use your official @aaacet.ac.in or verified Google email.`,
       cleanEmail,
     };
   }
 
-  // Must strictly be from the official college domain
-  if (domainPart !== "aaacet.ac.in") {
+  // Accepts official college domain (@aaacet.ac.in) or personal/college Gmail (@gmail.com)
+  const isCollegeDomain = domainPart === "aaacet.ac.in";
+  const isGmailDomain = domainPart === "gmail.com";
+
+  if (!isCollegeDomain && !isGmailDomain) {
     return {
       isOriginal: false,
-      reason: `Email domain must be @aaacet.ac.in (AAA College of Engineering and Technology). Provided: @${domainPart}`,
+      reason: `Email domain must be @aaacet.ac.in or @gmail.com. Provided: @${domainPart}`,
       cleanEmail,
     };
   }
 
-  // Validate local-part (student roll number format or official staff handle)
-  // Student roll numbers at AAACET: e.g. 24urcs029, 23uece012, 22ueee005, 24uad015, etc.
+  // Validate local-part (student roll number format or official staff handle or valid name)
   const isStudentRoll = /^[0-9]{2}[a-z]{2,5}[0-9]{2,4}$/i.test(localPart);
-  const isStaffHandle = /^[a-z]{3,20}(\.[a-z]{1,20})?$/i.test(localPart);
+  const isStaffHandle = /^[a-z0-9._-]{3,30}$/i.test(localPart);
 
   if (!isStudentRoll && !isStaffHandle && localPart !== "admin") {
     return {
       isOriginal: false,
-      reason: `Email local format "${localPart}" does not match the official AAACET student roll number (e.g. 24urcs029@aaacet.ac.in) or faculty username.`,
+      reason: `Email local format "${localPart}" is invalid.`,
       cleanEmail,
     };
   }
@@ -434,6 +435,47 @@ export async function sendWelcomeEmail(
   const text = `Welcome to QuickServe Smart Canteen, ${studentName}!\n\nYour account has been successfully registered with ${cleanEmail}.\nRoll No: ${studentId}\n\nYou can now browse the menu, schedule meal orders, and skip the counter lines!\n\nCanteen Hours:\nBreakfast: 8:00 AM - 9:30 AM\nLunch: 12:30 PM - 1:45 PM\nSnacks: 4:00 PM - 5:30 PM\n\nAAA College Canteen`;
 
   return await sendEmail(cleanEmail, subject, html, text, "welcome");
+}
+
+/**
+ * Sends real-time notification to Canteen Admin upon new registration
+ */
+export async function sendAdminRegistrationAlert(
+  userEmail: string,
+  userName: string,
+  studentId: string,
+  role: string
+): Promise<SentEmail> {
+  const adminEmail = process.env.ADMIN_ALERT_EMAIL || "admin@aaacet.ac.in";
+  const subject = `🔔 [Admin Alert] New User Registered: ${userName} (${studentId || userEmail})`;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 580px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; color: #1e293b;">
+      <div style="background: #0f172a; padding: 20px; text-align: center; color: #ffffff;">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 800;">QuickServe Admin Alert</h2>
+        <p style="margin: 4px 0 0 0; font-size: 12px; color: #94a3b8;">New Registration Notification</p>
+      </div>
+      <div style="padding: 24px;">
+        <p style="font-size: 14px; color: #334155; margin-top: 0;">
+          A new user registration has been successfully completed in the Smart Canteen system:
+        </p>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin: 16px 0; font-size: 13px;">
+          <p style="margin: 4px 0;"><strong>Name:</strong> ${userName}</p>
+          <p style="margin: 4px 0;"><strong>Email:</strong> ${userEmail}</p>
+          <p style="margin: 4px 0;"><strong>Roll No / User ID:</strong> ${studentId || "N/A"}</p>
+          <p style="margin: 4px 0;"><strong>Account Role:</strong> ${role.toUpperCase()}</p>
+          <p style="margin: 4px 0;"><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+        </div>
+        <p style="font-size: 12px; color: #64748b; margin-bottom: 0;">
+          A verification & confirmation email has been dispatched to the user.
+        </p>
+      </div>
+    </div>
+  `;
+
+  const text = `QuickServe Admin Alert: New user registered.\nName: ${userName}\nEmail: ${userEmail}\nRoll No: ${studentId}\nRole: ${role}\nTime: ${new Date().toLocaleString()}`;
+
+  return await sendEmail(adminEmail, subject, html, text, "security_alert");
 }
 
 /**

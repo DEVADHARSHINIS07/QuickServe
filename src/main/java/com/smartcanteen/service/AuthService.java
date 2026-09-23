@@ -77,6 +77,7 @@ public class AuthService {
 
         // Send Email & Notification
         emailService.sendRegistrationConfirmation(email, req.getName());
+        emailService.sendAdminRegistrationAlert(email, req.getName(), studentId, "STUDENT");
         notificationService.createNotification(studentId, "STUDENT", null,
                 "Welcome to Smart Canteen", "Your student account (" + studentId + ") has been successfully activated.", "system");
 
@@ -118,6 +119,7 @@ public class AuthService {
         userRepository.save(user);
 
         emailService.sendRegistrationConfirmation(email, req.getName());
+        emailService.sendAdminRegistrationAlert(email, req.getName(), adminId, "ADMIN");
 
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, req.getPassword())

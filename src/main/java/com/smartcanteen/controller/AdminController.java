@@ -29,6 +29,23 @@ public class AdminController {
     @Autowired
     private ReportService reportService;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
+    @DeleteMapping("/users/all")
+    public ResponseEntity<ApiResponse<String>> deleteAllUserData() {
+        int resetTokensDeleted = jdbcTemplate.update("DELETE FROM password_reset_tokens");
+        int usersDeleted = jdbcTemplate.update("DELETE FROM users WHERE role != 'ADMIN'");
+        return ResponseEntity.ok(ApiResponse.ok("Registration data cleared. Deleted " + usersDeleted + " user records and " + resetTokensDeleted + " reset tokens."));
+    }
+
+    @DeleteMapping("/users/purge-everything")
+    public ResponseEntity<ApiResponse<String>> purgeAllRegistrations() {
+        int resetTokensDeleted = jdbcTemplate.update("DELETE FROM password_reset_tokens");
+        int usersDeleted = jdbcTemplate.update("DELETE FROM users");
+        return ResponseEntity.ok(ApiResponse.ok("All registrations purged completely: " + usersDeleted + " records removed."));
+    }
+
     @GetMapping("/dashboard")
     public ResponseEntity<ApiResponse<DashboardResponse>> getDashboard() {
         return ResponseEntity.ok(ApiResponse.ok("Dashboard statistics fetched", reportService.getDashboardMetrics()));

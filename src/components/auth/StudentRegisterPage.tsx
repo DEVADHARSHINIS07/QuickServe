@@ -46,7 +46,7 @@ export const StudentRegisterPage: React.FC<StudentRegisterPageProps> = ({ onNavi
 
     // Auto-extract roll number if available
     const [local, domain] = clean.split('@');
-    if (domain === COLLEGE_DOMAIN && /^[0-9]{2}[a-z]{2,5}[0-9]{2,4}$/i.test(local)) {
+    if ((domain === COLLEGE_DOMAIN || domain === 'gmail.com') && /^[0-9]{2}[a-z]{2,5}[0-9]{2,4}$/i.test(local)) {
       if (!studentId) {
         setStudentId(local.toUpperCase());
       }
@@ -56,12 +56,17 @@ export const StudentRegisterPage: React.FC<StudentRegisterPageProps> = ({ onNavi
       const check = await checkOriginalEmail(clean);
       setEmailCheckResult({ isOriginal: check.isOriginal, reason: check.reason });
     } catch {
-      const isOriginal = clean.endsWith(`@${COLLEGE_DOMAIN}`);
+      const isOriginal = clean.endsWith(`@${COLLEGE_DOMAIN}`) || clean.endsWith('@gmail.com');
       setEmailCheckResult({
         isOriginal,
-        reason: isOriginal ? undefined : `Accepts only original @${COLLEGE_DOMAIN} college emails`
+        reason: isOriginal ? undefined : `Accepts @${COLLEGE_DOMAIN} or @gmail.com emails`
       });
     }
+  };
+
+  const isValidEmail = (em: string) => {
+    const clean = em.trim().toLowerCase();
+    return clean.endsWith(`@${COLLEGE_DOMAIN}`) || clean.endsWith('@gmail.com');
   };
 
   // Dispatch 6-digit verification code to email
@@ -70,7 +75,12 @@ export const StudentRegisterPage: React.FC<StudentRegisterPageProps> = ({ onNavi
     const clean = email.trim().toLowerCase();
 
     if (!clean) {
-      setStatusMsg({ type: 'error', text: 'Please enter your college email address first.' });
+      setStatusMsg({ type: 'error', text: 'Please enter your email address first.' });
+      return;
+    }
+
+    if (!isValidEmail(clean)) {
+      setStatusMsg({ type: 'error', text: `Please enter an official @${COLLEGE_DOMAIN} or @gmail.com address.` });
       return;
     }
 
@@ -82,12 +92,12 @@ export const StudentRegisterPage: React.FC<StudentRegisterPageProps> = ({ onNavi
       setCodeSent(true);
       setStatusMsg({
         type: 'success',
-        text: `6-digit verification code sent to ${clean}. Please check your official College Gmail inbox.`
+        text: `6-digit verification code sent to ${clean}. Please check your inbox.`
       });
     } else {
       setStatusMsg({
         type: 'error',
-        text: res.message || 'Failed to dispatch verification code. Please make sure the email is an original @aaacet.ac.in address.'
+        text: res.message || 'Failed to dispatch verification code.'
       });
     }
   };
@@ -124,11 +134,11 @@ export const StudentRegisterPage: React.FC<StudentRegisterPageProps> = ({ onNavi
 
     const trimmedEmail = email.trim().toLowerCase();
 
-    // Feature 1: Validate original email
-    if (!trimmedEmail.endsWith(`@${COLLEGE_DOMAIN}`)) {
+    // Validate email
+    if (!isValidEmail(trimmedEmail)) {
       setStatusMsg({
         type: 'error',
-        text: `Access Denied: Only original college email addresses ending with @${COLLEGE_DOMAIN} are accepted.`
+        text: `Please enter an official college email (@${COLLEGE_DOMAIN}) or verified Gmail address.`
       });
       return;
     }
@@ -251,7 +261,7 @@ export const StudentRegisterPage: React.FC<StudentRegisterPageProps> = ({ onNavi
                   disabled={isEmailVerified}
                   value={email}
                   onChange={e => handleEmailChange(e.target.value)}
-                  placeholder="rollnumber@aaacet.ac.in"
+                  placeholder="rollnumber@aaacet.ac.in or username@gmail.com"
                   className={`w-full pl-10 pr-3 py-2 bg-slate-50 dark:bg-slate-800/80 border rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none ${
                     isEmailVerified
                       ? 'border-emerald-300 dark:border-emerald-700 bg-emerald-50/20'
@@ -264,7 +274,7 @@ export const StudentRegisterPage: React.FC<StudentRegisterPageProps> = ({ onNavi
                 <button
                   type="button"
                   onClick={handleSendCode}
-                  disabled={isSendingCode || !email.trim().endsWith(`@${COLLEGE_DOMAIN}`)}
+                  disabled={isSendingCode || !isValidEmail(email)}
                   className="px-3 py-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 font-medium text-xs rounded-xl transition flex items-center justify-center gap-1 shrink-0"
                 >
                   <Send size={12} />

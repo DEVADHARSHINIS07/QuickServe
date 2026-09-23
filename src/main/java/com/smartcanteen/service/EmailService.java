@@ -40,10 +40,25 @@ public class EmailService {
     public void sendRegistrationConfirmation(String email, String name) {
         String subject = "Welcome to AAACET QuickServe Smart Canteen!";
         String body = "Dear " + name + ",\n\n" +
-                "Your Smart Canteen account has been successfully registered using your AAACET College Email (" + email + ").\n\n" +
+                "Your Smart Canteen account has been successfully registered (" + email + ").\n\n" +
                 "You can now log in, skip lines, schedule pickup slots, and order your favorite food items online!\n\n" +
                 "Best Regards,\nAAACET Smart Canteen Team";
         sendEmail(email, subject, body);
+    }
+
+    public void sendAdminRegistrationAlert(String userEmail, String userName, String studentId, String role) {
+        String subject = "New User Registration Alert: " + userName + " (" + (studentId != null ? studentId : userEmail) + ")";
+        String body = "Hello Admin,\n\n" +
+                "A new user registration has taken place on QuickServe Smart Canteen:\n\n" +
+                "• Name: " + userName + "\n" +
+                "• Email: " + userEmail + "\n" +
+                "• Roll No / ID: " + studentId + "\n" +
+                "• Role: " + role + "\n" +
+                "• Registered At: " + new java.util.Date() + "\n\n" +
+                "The email verification message and welcome package were dispatched to the user.\n\n" +
+                "QuickServe Security Notification";
+        // Notify admin mailbox
+        sendEmail("admin@aaacet.ac.in", subject, body);
     }
 
     public void sendPasswordResetEmail(String email, String resetToken) {

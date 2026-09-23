@@ -33,6 +33,7 @@ com\smartcanteen\controller\AdminController.class
 com\smartcanteen\config\WebSocketConfig.class
 com\smartcanteen\controller\AuthController.class
 com\smartcanteen\service\ReportService.class
+com\smartcanteen\controller\HealthController.class
 com\smartcanteen\controller\NotificationController.class
 com\smartcanteen\dto\AuthDTOs$ResetPasswordRequest.class
 com\smartcanteen\model\Notification.class

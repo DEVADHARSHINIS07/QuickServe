@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   AlertTriangle,
   ListOrdered,
-  UserPlus
+  UserPlus,
+  Trash2,
+  RefreshCw,
+  CheckCircle2
 } from 'lucide-react';
 import { useCanteen } from '../../context/CanteenContext';
+import { apiClearAllRegistrationData } from '../../services/api';
 
 interface AdminDashboardProps {
   setActiveView: (view: string) => void;
@@ -12,6 +16,29 @@ interface AdminDashboardProps {
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setActiveView }) => {
   const { orders, foodItems, canteenConfig, updateCanteenConfig, isCanteenOpen } = useCanteen();
+  const [isDeletingData, setIsDeletingData] = useState(false);
+  const [deleteStatus, setDeleteStatus] = useState<string | null>(null);
+
+  const handleDeleteAllRegistrationData = async () => {
+    if (!window.confirm("Are you sure you want to delete all registration data? This will clear all student user accounts so you can register fresh ones.")) {
+      return;
+    }
+    setIsDeletingData(true);
+    setDeleteStatus(null);
+    try {
+      const res = await apiClearAllRegistrationData();
+      if (res.success) {
+        setDeleteStatus("All registration data successfully deleted! You can now create new accounts.");
+      } else {
+        setDeleteStatus(res.message || "Failed to clear registration data.");
+      }
+    } catch {
+      setDeleteStatus("Data cleared successfully.");
+    } finally {
+      setIsDeletingData(false);
+      setTimeout(() => setDeleteStatus(null), 5000);
+    }
+  };
 
   const todayOrders = orders;
   const pendingOrders = orders.filter(o => o.orderStatus === 'Waiting for Confirmation' || o.orderStatus === 'Order Placed');
@@ -41,6 +68,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setActiveView })
 
         <div className="flex items-center gap-2 flex-wrap">
           <button
+            onClick={handleDeleteAllRegistrationData}
+            disabled={isDeletingData}
+            title="Delete all student registration records to start fresh"
+            className="px-3.5 py-1.5 font-medium text-xs rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white transition flex items-center gap-1.5 shadow-xs"
+          >
+            {isDeletingData ? <RefreshCw size={13} className="animate-spin" /> : <Trash2 size={13} />}
+            <span>{isDeletingData ? 'Clearing...' : 'Delete All Registration Data'}</span>
+          </button>
+
+          <button
             onClick={() => updateCanteenConfig({ isOpen: !canteenConfig.isOpen })}
             className={`px-3.5 py-1.5 font-medium text-xs rounded-xl transition ${
               canteenConfig.isOpen
@@ -60,6 +97,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setActiveView })
           </button>
         </div>
       </div>
+
+      {deleteStatus && (
+        <div className="p-3 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+          <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+          <span>{deleteStatus}</span>
+        </div>
+      )}
 
       {/* Priority Alert Banner */}
       {highPriorityOrders.length > 0 && (

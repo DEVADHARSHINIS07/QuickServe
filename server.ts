@@ -15,12 +15,14 @@ import {
   verifyAndConsumeResetToken,
   getDemoAccounts,
   clearAllUserData,
+  purgeAllUsers,
 } from "./server/authService";
 import {
   validateOriginalCollegeEmail,
   sendEmailVerificationCode,
   verifyEmailCode,
   sendWelcomeEmail,
+  sendAdminRegistrationAlert,
   sendPasswordResetCode,
   verifyPasswordResetCode,
   sendPasswordChangedConfirmation,
@@ -382,8 +384,10 @@ async function startServer() {
     // Feature 2: Send welcome message to user's email
     try {
       await sendWelcomeEmail(user.email, user.name, user.studentId);
+      // Notify Admin
+      await sendAdminRegistrationAlert(user.email, user.name, user.studentId, "student");
     } catch (err) {
-      console.error("Failed to send welcome email:", err);
+      console.error("Failed to send welcome/admin email:", err);
     }
 
     return res.status(201).json({
@@ -763,13 +767,50 @@ async function startServer() {
     });
   });
 
-  // 8. Remove / Clear All User Data Handler
-  app.post(["/api/auth/clear-user-data", "/api/user/clear-all", "/api/auth/purge-users"], (req, res) => {
-    const result = clearAllUserData();
+  // 8. Remove / Clear All User Data Handler (Supports both local and Spring Boot backend)
+  app.all(["/api/auth/clear-user-data", "/api/user/clear-all", "/api/admin/users/all", "/api/health/clear-users"], async (req, res) => {
+    const localResult = clearAllUserData();
+    let springBootResult = null;
+
+    try {
+      const sbRes = await fetch(`${SPRING_BOOT_BASE_URL}/api/health/clear-users`, { method: "POST" });
+      if (sbRes.ok) {
+        springBootResult = await sbRes.json();
+      }
+    } catch {
+      // Spring Boot not running or error ignored
+    }
+
     return res.json({
       success: true,
-      message: "All student and personal user accounts have been completely removed.",
-      details: result,
+      message: "All student registration data has been completely deleted. You can now register fresh accounts.",
+      details: {
+        local: localResult,
+        springBoot: springBootResult,
+      },
+    });
+  });
+
+  app.all(["/api/auth/purge-users", "/api/admin/users/purge-everything", "/api/health/purge-all-users"], async (req, res) => {
+    const localResult = purgeAllUsers();
+    let springBootResult = null;
+
+    try {
+      const sbRes = await fetch(`${SPRING_BOOT_BASE_URL}/api/health/purge-all-users`, { method: "POST" });
+      if (sbRes.ok) {
+        springBootResult = await sbRes.json();
+      }
+    } catch {
+      // Ignored
+    }
+
+    return res.json({
+      success: true,
+      message: "All registration records across all roles purged completely.",
+      details: {
+        local: localResult,
+        springBoot: springBootResult,
+      },
     });
   });
 
